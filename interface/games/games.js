@@ -1,8 +1,9 @@
 const gamesList = document.getElementById('game-list');
+let gameName = null;
 
 async function getGames() {
     try {
-        const res = await fetch('/api/games');
+        const res = await fetch('/api/' + gameName + '/games');
         return await res.json();
     } catch {
         return [];
@@ -38,6 +39,12 @@ async function isValidNewId(newId) {
 }
 
 window.onload = async _ => {
+    const search = new URLSearchParams(window.location.search);
+    if (!search.has('g')) window.open('/', '_self');
+    gameName = search.get('g');
+    const validGameNames = await (await fetch('/api/games')).json();
+    if (!validGameNames.includes(gameName)) window.open('/', '_self');
+
     const games = await getGames();
     const gamesList = document.getElementById('game-list');
     if (games.length > 1) {
@@ -50,7 +57,7 @@ window.onload = async _ => {
                 p.appendChild(text);
                 if (game.playable) {
                     const play = document.createElement('a');
-                    play.href = "/parachess/play?g=" + game.name;
+                    play.href = "/" + gameName + "/play?g=" + game.name;
                     play.innerText = "Jouer"
                     p.appendChild(play);
                 } else {
@@ -60,7 +67,7 @@ window.onload = async _ => {
                     p.appendChild(play);
                 }
                 const watch = document.createElement('a');
-                watch.href = "/parachess/watch?g=" + game.name;
+                watch.href = "/" + gameName + "/watch?g=" + game.name;
                 watch.innerText = "Regarder";
                 p.appendChild(watch);
                 container.appendChild(p);
@@ -82,7 +89,7 @@ window.onload = async _ => {
 
 async function createGameAutomatically() {
     document.getElementById('wait-popup').classList.add("visible");
-    const req = await fetch("/api/create-game");
+    const req = await fetch("/api/" + gameName + "/create-game");
     const name = (await req.json()).name;
-    window.open('/parachess/play?g=' + name, '_self');
+    window.open('/' + gameName + '/play?g=' + name, '_self');
 }
