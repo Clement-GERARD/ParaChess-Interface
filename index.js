@@ -2,8 +2,8 @@ import api from './routes/api.js';
 import path from 'path';
 import home from './routes/home.js';
 import games from './routes/games.js';
-import play from './routes/play.js'
-import watch from './routes/watch.js'
+import parachess from './routes/parachess.js'
+import disconnect4 from './routes/disconnect4.js'
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -12,7 +12,6 @@ import gameNamespace from './namespaces/game.js';
 const app = express();
 app.set('trust proxy', true);
 app.use('/public', express.static(path.join(process.cwd(), 'interface')));
-app.use('/disconnect4', express.static(path.join(process.cwd(), 'interface/disconnect4')));
 
 const server = http.createServer(app);
 const io = new Server(server);
@@ -33,8 +32,8 @@ io.on('connection', socket => {
 });
 
 app.use('/api', api());
-app.use('/play', play());
-app.use('/watch', watch());
+app.use('/parachess', parachess());
+app.use('/disconnect4', disconnect4());
 app.use('/games', games());
 app.use('/about-us', (req, res) => {res.sendFile(path.join(process.cwd(), '/interface/about-us/about-us.html'));});
 app.use('/legal-notice', (req, res) => {res.sendFile(path.join(process.cwd(), '/interface/legal-notice/legal-notice.html'));});

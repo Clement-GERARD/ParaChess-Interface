@@ -1,4 +1,4 @@
-import { Chess, PROMOTIONS_PIECES_NAME } from '../chess/chess.js';
+import { Chess, PROMOTIONS_PIECES_NAME } from '../games/parachess/chess.js';
 import { rec, startListening, transform } from '../receive-audio.js';
 
 function createSendEval(io, gameId) {

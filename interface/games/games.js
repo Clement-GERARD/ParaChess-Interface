@@ -14,9 +14,9 @@ async function createGame() {
     const fen = document.getElementById('fen-code').value;
     if (await isValidNewId(id)) {
         if (fen === "" || fen === null || fen === undefined) {
-            window.open('/play?g=' + id, '_self');
+            window.open('/parachess/play?g=' + id, '_self');
         } else {
-            window.open('/play?g=' + id + "&fen=" + fen, '_self');
+            window.open('/parachess/play?g=' + id + "&fen=" + fen, '_self');
         }
     } else {
         document.getElementById("wrong-id-popup").classList.add('visible');
@@ -50,7 +50,7 @@ window.onload = async _ => {
                 p.appendChild(text);
                 if (game.playable) {
                     const play = document.createElement('a');
-                    play.href = "/play?g=" + game.name;
+                    play.href = "/parachess/play?g=" + game.name;
                     play.innerText = "Jouer"
                     p.appendChild(play);
                 } else {
@@ -60,7 +60,7 @@ window.onload = async _ => {
                     p.appendChild(play);
                 }
                 const watch = document.createElement('a');
-                watch.href = "/watch?g=" + game.name;
+                watch.href = "/parachess/watch?g=" + game.name;
                 watch.innerText = "Regarder";
                 p.appendChild(watch);
                 container.appendChild(p);
@@ -84,5 +84,5 @@ async function createGameAutomatically() {
     document.getElementById('wait-popup').classList.add("visible");
     const req = await fetch("/api/create-game");
     const name = (await req.json()).name;
-    window.open('/play?g=' + name, '_self');
+    window.open('/parachess/play?g=' + name, '_self');
 }

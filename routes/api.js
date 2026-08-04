@@ -1,7 +1,7 @@
 import express, { Router } from "express"
 import path from 'path';
 import { games } from '../namespaces/game.js';
-import { Chess } from '../chess/chess.js';
+import { Chess } from '../games/parachess/chess.js';
 
 const MAX_HOURS = 2;
 const router = Router();
