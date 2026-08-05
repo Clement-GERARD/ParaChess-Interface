@@ -411,6 +411,8 @@ export class Chess {
      * @param {boolean} removePosition remove the position from the fen code
      */
     undo(evalPosition=false, removePosition=false) {
+        if (this.gameOver)
+            return;
         const move = this.history.pop();
         if (!move) return;
         if (removePosition) {
@@ -714,7 +716,6 @@ export class Chess {
             whiteWon: this.whiteWon,
             blackWon: this.blackWon,
             reason: this.reason,
-            opportunity: this.side,
             whiteKingCheck: (this.isCheck('w') ? this.board.getKingSquare('w') : 'null'),
             blackKingCheck: (this.isCheck('b') ? this.board.getKingSquare('b') : 'null')
         };
