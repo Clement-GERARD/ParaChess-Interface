@@ -140,3 +140,7 @@ function goToMenu() {
 
 createButtonGrid();
 createBoardGrid();
+const search = new URLSearchParams(window.location.search);
+if (search.has('g') && document.getElementById('game-id-span')) {
+    document.getElementById('game-id-span').textContent = search.get('g');
+}

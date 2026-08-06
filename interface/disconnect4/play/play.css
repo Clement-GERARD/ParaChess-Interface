@@ -95,3 +95,17 @@ body {
 .red-turn {
     background-color: red;
 }
+
+p#game-id {
+    text-align: center;
+}
+
+span#game-id-span {
+    border-radius: 10px;
+    padding: 2px;
+    font-family: consolas;
+    background-color: #0097db;
+    color: white;
+    margin: 2px;
+    cursor: text;
+}
