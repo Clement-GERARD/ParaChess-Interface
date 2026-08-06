@@ -6,7 +6,7 @@ function connection() {
     const search = new URLSearchParams(window.location.search);
     if(!search.has('g')) return;
 
-    socket = io('/game', {
+    socket = io('/parachess', {
         query: {
             id: search.get('g')
         }

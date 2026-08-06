@@ -1,10 +1,12 @@
 import express, { Router } from "express"
 import path from 'path';
-import { games } from '../namespaces/game.js';
+import { parachessGames } from '../namespaces/parachess.js';
+import { disconnect4Games } from '../namespaces/disconnect4.js';
 import { Chess } from '../games/parachess/chess.js';
 import { deflate } from "zlib";
 
-const MAX_HOURS = 2;
+const CHESS_MAX_HOURS = 2;
+const CONNECT4_MAX_HOURS = .25;
 const router = Router();
 
 export default function() {
@@ -16,24 +18,38 @@ export default function() {
     router.get('/:game/games', (req, res) => {
         const gameName  = req.params.game;
         const jsonList = [];
+        const toDelete = [];
         switch (gameName) {
             case "parachess":
-                const toDelete = [];
-                Object.keys(games).forEach(id => {
-                    if (Date.now() - games[id].lastMoveTime > MAX_HOURS * 3600000) // 2h / move
+                toDelete.splice(0, toDelete.length);
+                Object.keys(parachessGames).forEach(id => {
+                    if (Date.now() - parachessGames[id].lastMoveTime > CHESS_MAX_HOURS * 3600000) // 2h / move
                         toDelete.push(id);
                 });
-                toDelete.forEach(id => delete games[id]);
-                Object.keys(games).forEach(game => {
+                toDelete.forEach(id => delete parachessGames[id]);
+                Object.keys(parachessGames).forEach(game => {
                     jsonList.push({
                         name: game,
-                        playable: games[game].isPlayable()
+                        playable: parachessGames[game].isPlayable()
                     });
                 });
                 break;
             case "disconnect4":
+                toDelete.splice(0, toDelete.length);
+                Object.keys(disconnect4Games).forEach(id => {
+                    if (Date.now() - disconnect4Games[id].lastMoveTime > CONNECT4_MAX_HOURS * 3600000) // 15min / move
+                        toDelete.push(id);
+                });
+                toDelete.forEach(id => delete disconnect4Games[id]);
+                Object.keys(disconnect4Games).forEach(game => {
+                    jsonList.push({
+                        name: game,
+                        playable: disconnect4Games[game].isPlayable()
+                    });
+                });
                 break;
             default:
+                jsonList["error"] = "Unknown game !";
                 break;
         }
         res.send(jsonList);
@@ -43,17 +59,24 @@ export default function() {
 
         const gameName = req.params.game;
         let validName = null;
+        let i = 1;
         switch (gameName) {
             case "parachess":
-                let i = 1;
-                while (Object.keys(games).includes('ParaChess-' + i)) {
+                i = 1;
+                while (Object.keys(parachessGames).includes('ParaChess-' + i)) {
                     i++;
                 }
                 validName = 'ParaChess-' + i;
                 break;
             case "disconnect4":
-                validName = "DisConnect4-0";
+                i = 1;
+                while (Object.keys(disconnect4Games).includes('DisConnect4-' + i)) {
+                    i++;
+                }
+                validName = 'DisConnect4-' + i;
+                break;
             default:
+                validName = "Error :  unknown game !";
                 break;
         }
         res.send({name: validName});

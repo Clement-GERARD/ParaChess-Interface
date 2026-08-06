@@ -7,7 +7,8 @@ import disconnect4 from './routes/disconnect4.js'
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import gameNamespace from './namespaces/game.js';
+import parachessNamespace from './namespaces/parachess.js';
+import disconnect4Namespace from './namespaces/disconnect4.js';
 
 const app = express();
 app.set('trust proxy', true);
@@ -23,7 +24,8 @@ app.use((req, res, next) => {
     next();
 });
 
-const nsp = gameNamespace(io);
+const parachessNSP = parachessNamespace(io);
+const disconnect4NSP = disconnect4Namespace(io);
 
 io.on('connection', socket => {
     socket.on('alive', status => {

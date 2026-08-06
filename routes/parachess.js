@@ -1,6 +1,5 @@
 import express, { Router } from "express"
 import path from 'path';
-import { games } from '../namespaces/game.js';
 
 const router = Router();
 

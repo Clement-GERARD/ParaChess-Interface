@@ -3,12 +3,12 @@ import { rec, startListening, transform } from '../receive-audio.js';
 
 function createSendEval(io, gameId) {
     return function (payload) {
-        const room = io.of('/game').adapter.rooms.get('game:' + gameId);
+        const room = io.of('/parachess').adapter.rooms.get('game:' + gameId);
         if (!room) return;
         room.forEach(socketId => {
-            const s = io.of('/game').sockets.get(socketId)
+            const s = io.of('/parachess').sockets.get(socketId)
             if (!s) return;
-            if (!games[gameId].isPlayer(s.handshake.address)) {
+            if (!parachessGames[gameId].isPlayer(s.handshake.address)) {
                 s.emit("eval", payload);
             }
         });
@@ -18,12 +18,12 @@ function createSendEval(io, gameId) {
 function fromTextToMove(nsp, text, address) {
     const ip = extractIP(address);
 
-    if (!lastUserGamesId[ip]) return;
-    const id = lastUserGamesId[ip];
-    if (!games[id]) return;
-    if (!games[id].isPlayer(ip)) return;
+    if (!lastParachessUserGamesId[ip]) return;
+    const id = lastParachessUserGamesId[ip];
+    if (!parachessGames[id]) return;
+    if (!parachessGames[id].isPlayer(ip)) return;
 
-    const game = games[id];
+    const game = parachessGames[id];
     const lowerCaseText = text.toLowerCase();
     const regex = /\b[a-h][1-8]\b/g;
     const squares = lowerCaseText.match(regex);
@@ -48,7 +48,7 @@ function fromTextToMove(nsp, text, address) {
         else piece = "r";                                               // Rook
     }
 
-    console.log(lastUserGamesId[ip] + " : " + squares[0] + "-" + squares[1] + " (" + piece + "): " + game.play("PARACHESS", squares[0], squares[1], piece));
+    console.log(lastParachessUserGamesId[ip] + " : " + squares[0] + "-" + squares[1] + " (" + piece + "): " + game.play("PARACHESS", squares[0], squares[1], piece));
     game.displayBoard();
 
     nsp.to('game:' + id).emit('boardStates', game.getPositions());
@@ -57,13 +57,12 @@ function fromTextToMove(nsp, text, address) {
 }
 
 
-export const games = { ParaChessDefaultGame: new Chess() };
+export const parachessGames = { ParaChessDefaultGame: new Chess() };
+const lastParachessUserGamesId = { Parachess: "ParaChessDefaultGame" };
 
-const lastUserGamesId = { Parachess: "ParaChessDefaultGame" };
-
-export default function gameNamespace(io) {
-    games.ParaChessDefaultGame.onEval = createSendEval(io, 'live');
-    const nsp = io.of('/game');
+export default function parachessNamespace(io) {
+    parachessGames.ParaChessDefaultGame.onEval = createSendEval(io, 'live');
+    const nsp = io.of('/parachess');
 
     startListening(fromTextToMove);
 
@@ -71,73 +70,75 @@ export default function gameNamespace(io) {
         const { id } = socket.handshake.query;
         if (!id) return;
         const ip = extractIP(socket.handshake.address);
-        lastUserGamesId[ip] = id;
-        games[id] = games[id] ?? new Chess(createSendEval(io, id));
+        lastParachessUserGamesId[ip] = id;
+        parachessGames[id] = parachessGames[id] ?? new Chess(createSendEval(io, id));
 
         const roomIdentifier = `game:${id}`;
 
         socket.join(roomIdentifier);
-        socket.emit('boardStates', games[id].getPositions());
-        socket.emit('legalMoves', games[id].getAllLegalMoves());
-        socket.emit('state', games[id].getState());
-        if (!games[id].isPlayer(ip))
-            socket.emit('eval', games[id].getEval());
+        socket.emit('boardStates', parachessGames[id].getPositions());
+        socket.emit('legalMoves', parachessGames[id].getAllLegalMoves());
+        socket.emit('state', parachessGames[id].getState());
+        if (!parachessGames[id].isPlayer(ip))
+            socket.emit('eval', parachessGames[id].getEval());
 
         socket.on('move', (from, to, promotion) => {
-            const legal = games[id].play(ip, from, to, promotion ?? "none");
-            games[id].displayBoard();
+            if (!parachessGames[id].isPlayer(ip))
+                return;
+            const legal = parachessGames[id].play(ip, from, to, promotion ?? "none");
+            parachessGames[id].displayBoard();
             if (legal) {
-                const moves = games[id].getAllLegalMoves();
+                const moves = parachessGames[id].getAllLegalMoves();
                 nsp.to(roomIdentifier).emit('legalMoves', moves);
-                nsp.to(roomIdentifier).emit('boardStates', games[id].getPositions());
-                nsp.to(roomIdentifier).emit('state', games[id].getState());
+                nsp.to(roomIdentifier).emit('boardStates', parachessGames[id].getPositions());
+                nsp.to(roomIdentifier).emit('state', parachessGames[id].getState());
                 nsp.to(roomIdentifier).emit('move', from, to, promotion)
             } else {
-                socket.emit('boardStates', games[id].getPositions());
-                socket.emit('state', games[id].getState());
+                socket.emit('boardStates', parachessGames[id].getPositions());
+                socket.emit('state', parachessGames[id].getState());
             }
         });
 
         socket.on('resetState', () => {
-            if (!games[id].isPlayer(ip))
+            if (!parachessGames[id].isPlayer(ip))
                 return;
-            games[id].clear();
-            games[id] = new Chess(createSendEval(io, id), Chess.DEFAULT_FEN, games[id].getInvertedUser());
-            nsp.to(roomIdentifier).emit('boardStates', games[id].getPositions());
-            nsp.to(roomIdentifier).emit('legalMoves', games[id].getAllLegalMoves());
-            nsp.to(roomIdentifier).emit('state', games[id].getState());
-            nsp.to(roomIdentifier).emit('eval', games[id].getEval());
-            const room = io.of('/game').adapter.rooms.get('game:' + id);
+            parachessGames[id].clear();
+            parachessGames[id] = new Chess(createSendEval(io, id), Chess.DEFAULT_FEN, parachessGames[id].getInvertedUser());
+            nsp.to(roomIdentifier).emit('boardStates', parachessGames[id].getPositions());
+            nsp.to(roomIdentifier).emit('legalMoves', parachessGames[id].getAllLegalMoves());
+            nsp.to(roomIdentifier).emit('state', parachessGames[id].getState());
+            nsp.to(roomIdentifier).emit('eval', parachessGames[id].getEval());
+            const room = io.of('/parachess').adapter.rooms.get('game:' + id);
             if (!room) return;
             room.forEach(socketId => {
-                const s = io.of('/game').sockets.get(socketId)
+                const s = io.of('/parachess').sockets.get(socketId)
                 if (!s) return;
-                if (games[id].isPlayer(extractIP(s.handshake.address))) {
-                    s.emit("side", "ALLOWED", games[id].getPlayer(extractIP(s.handshake.address)));
+                if (parachessGames[id].isPlayer(extractIP(s.handshake.address))) {
+                    s.emit("side", "ALLOWED", parachessGames[id].getPlayer(extractIP(s.handshake.address)));
                 }
             });
         });
 
         socket.on('undo', () => {
-            if (!games[id].isPlayer(ip) || games[id].getPlayer(ip) !== '*')
+            if (!parachessGames[id].isPlayer(ip) || parachessGames[id].getPlayer(ip) !== '*')
                 return;
-            games[id].undo(true, true);
+            parachessGames[id].undo(true, true);
             console.log('[' + id + '] going back !');
-            games[id].displayBoard();
-            nsp.to(roomIdentifier).emit('boardStates', games[id].getPositions());
-            nsp.to(roomIdentifier).emit('legalMoves', games[id].getAllLegalMoves());
-            nsp.to(roomIdentifier).emit('state', games[id].getState());
+            parachessGames[id].displayBoard();
+            nsp.to(roomIdentifier).emit('boardStates', parachessGames[id].getPositions());
+            nsp.to(roomIdentifier).emit('legalMoves', parachessGames[id].getAllLegalMoves());
+            nsp.to(roomIdentifier).emit('state', parachessGames[id].getState());
         });
 
         socket.on('fen', fen => {
-            if (!games[id].isPlayer(ip))
+            if (!parachessGames[id].isPlayer(ip))
                 return;
-            games[id].clear();
-            games[id] = new Chess(createSendEval(io, id), fen);
+            parachessGames[id].clear();
+            parachessGames[id] = new Chess(createSendEval(io, id), fen);
             console.log('[!] Forcing \"' + id + "\" to position : \"" + fen + "\"");
-            nsp.to(roomIdentifier).emit('boardStates', games[id].getPositions());
-            nsp.to(roomIdentifier).emit('state', games[id].getState());
-            const moves = games[id].getAllLegalMoves();
+            nsp.to(roomIdentifier).emit('boardStates', parachessGames[id].getPositions());
+            nsp.to(roomIdentifier).emit('state', parachessGames[id].getState());
+            const moves = parachessGames[id].getAllLegalMoves();
             nsp.to(roomIdentifier).emit('legalMoves', moves);
         });
 
@@ -146,9 +147,9 @@ export default function gameNamespace(io) {
                 status: "",
                 side: ""
             }
-            if (games[id].addPlayer(ip)) {
+            if (parachessGames[id].addPlayer(ip)) {
                 object.status = "ALLOWED";
-                object.side = games[id].getPlayer(ip);
+                object.side = parachessGames[id].getPlayer(ip);
             } else {
                 object.status = "REFUSED";
                 object.side = "La partie est déjà remplie !";
@@ -156,16 +157,16 @@ export default function gameNamespace(io) {
             socket.emit('side', object.status, object.side);
         });
 
-        socket.on('resign', fen => {
-            if (!games[id].isPlayer(ip))
+        socket.on('resign', _ => {
+            if (!parachessGames[id].isPlayer(ip))
                 return;
-            games[id].resign(games[id].getPlayer(ip));
-            nsp.to(roomIdentifier).emit('state', games[id].getState());
+            parachessGames[id].resign(parachessGames[id].getPlayer(ip));
+            nsp.to(roomIdentifier).emit('state', parachessGames[id].getState());
         });
 
         // Receive audio flux
         socket.on('audio', async function (buffer) {
-            if (!games[id].isPlayer(ip))
+            if (!parachessGames[id].isPlayer(ip))
                 return;
             const audioBuffer = Buffer.isBuffer(buffer)
                 ? buffer
