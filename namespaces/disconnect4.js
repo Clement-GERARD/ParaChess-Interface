@@ -23,12 +23,12 @@ function fromTextToMove(nsp, text, address) {
 
     nsp.to('game:' + id).emit('boardStates', game.getPositions());
     nsp.to('game:' + id).emit('state', game.getState());
-    nsp.to('game:' + id).emit('legalMoves', game.getAllLegalMoves());
+    nsp.to('game:' + id).emit('legalColumns', game.getLegalColumns());
 }
 
 
-export const disconnect4Games = { DisConnect4DefaultGame: new Connect4() };
-const lastDisconnect4UserGamesId = { DisConnect4: "DisConnect4DefaultGame" };
+export const disconnect4Games = {};
+const lastDisconnect4UserGamesId = {};
 
 export default function disconnect4Namespace(io) {
     const nsp = io.of('/disconnect4');
@@ -40,7 +40,7 @@ export default function disconnect4Namespace(io) {
         if (!id) return;
         const ip = extractIP(socket.handshake.address);
         lastDisconnect4UserGamesId[ip] = id;
-        disconnect4Games[id] = disconnect4Games[id] ?? new Chess(createSendEval(io, id));
+        disconnect4Games[id] = disconnect4Games[id] ?? new Connect4();
 
         const roomIdentifier = `game:${id}`;
 
@@ -50,16 +50,15 @@ export default function disconnect4Namespace(io) {
         socket.emit('state', disconnect4Games[id].getState());
         
         socket.on('move', (column) => {
-            if (!parachessGames[id].isPlayer(ip))
+            if (!disconnect4Games[id].isPlayer(ip))
                 return;
             const legal = disconnect4Games[id].play(ip, Number(column));
             disconnect4Games[id].displayBoard();
             if (legal) {
-                const moves = disconnect4Games[id].getAllLegalMoves();
-                nsp.to(roomIdentifier).emit('legalMoves', moves);
+                const moves = disconnect4Games[id].getLegalColumns();
+                nsp.to(roomIdentifier).emit('legalColumns', moves);
                 nsp.to(roomIdentifier).emit('boardStates', disconnect4Games[id].getPositions());
                 nsp.to(roomIdentifier).emit('state', disconnect4Games[id].getState());
-                nsp.to(roomIdentifier).emit('move', Number(column));
             } else {
                 socket.emit('boardStates', disconnect4Games[id].getPositions());
                 socket.emit('state', disconnect4Games[id].getState());
@@ -69,11 +68,10 @@ export default function disconnect4Namespace(io) {
         socket.on('resetState', () => {
             if (!disconnect4Games[id].isPlayer(ip))
                 return;
-            disconnect4Games[id] = new DisConnect4(disconnect4Games[id].getInvertedUser());
+            disconnect4Games[id] = new Connect4(disconnect4Games[id].getInvertedUser());
             nsp.to(roomIdentifier).emit('boardStates', disconnect4Games[id].getPositions());
-            nsp.to(roomIdentifier).emit('legalMoves', disconnect4Games[id].getAllLegalMoves());
+            nsp.to(roomIdentifier).emit('legalColumns', disconnect4Games[id].getLegalColumns());
             nsp.to(roomIdentifier).emit('state', disconnect4Games[id].getState());
-            nsp.to(roomIdentifier).emit('eval', disconnect4Games[id].getEval());
             const room = io.of('/disconnect4').adapter.rooms.get('game:' + id);
             if (!room) return;
             room.forEach(socketId => {
@@ -92,7 +90,7 @@ export default function disconnect4Namespace(io) {
             console.log('[' + id + '] going back !');
             disconnect4Games[id].displayBoard();
             nsp.to(roomIdentifier).emit('boardStates', disconnect4Games[id].getPositions());
-            nsp.to(roomIdentifier).emit('legalMoves', disconnect4Games[id].getAllLegalMoves());
+            nsp.to(roomIdentifier).emit('legalColumns', disconnect4Games[id].getLegalColumns());
             nsp.to(roomIdentifier).emit('state', disconnect4Games[id].getState());
         });
 

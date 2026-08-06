@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/disconnect4/play/play.css" />
     <link rel="stylesheet" href="/public/style.css" />
     <link rel="icon" href="/public/assets/favicon.ico" />
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+        integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
+        crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="head-tracker"></div>
@@ -45,10 +48,40 @@
         <div class="popupBackground">
         </div>
     </div>
+    <div id="state-popup" class="popup">
+        <div class="popup-body">
+            <h3 id="state-popup-title">
+                Partie en cours
+            </h3>
+            <div class="inline-options">
+                <button class="popup-option" onclick="hideAll();">Fermer</button>
+                <button class="popup-option" onclick="resetGame();hideAll();">Rejouer !</button>
+                <button class="popup-option" onclick="goToMenu();">Retour au menu !</button>
+            </div>
+        </div>
+        <div class="popupBackground">
+        </div>
+    </div>
+    <div id="refused-popup" class="popup">
+        <div class="popup-body">
+            <h3 class="refused-popup-title">
+                Impossible de jouer à cette partie !
+            </h3>
+            <p id="refused-popup-text">
+                L'identifiant de la partie est incorrect !
+            </p>
+            <div class="inline-options">
+                <button class="popup-option" onclick="goToMenu();">Retour au menu</button>
+                <button class="popup-option" onclick="watch();">Aller regarder</button>
+            </div>
+        </div>
+        <div class="popupBackground">
+        </div>
+    </div>
     <div id ='content'>
     <img class="background" src="/public/assets/background.svg" alt=""/>
     <div id="header">
-            <a href="/" id="return" aria-label="Retourner au portail">
+            <a href="/games/?g=disconnect4" id="return" aria-label="Retourner au portail">
                 <img src="/public/assets/return.svg" alt="return" />
             </a>
             <button id="toggle-facial-button" class="facial-active" aria-label="Activer/Désactiver le suivi du visage" onclick="displayFacialDetectionPopup(event);">
@@ -80,7 +113,7 @@
                     <img src="/public/assets/reset.svg" alt="" class="button-icon" />
                     <span>Recommencer la partie</span>
                 </button>
-                <button class="modern-button btn-danger" aria-label="Annuler le dernier coup" onclick="undo();">
+                <button id="undo-button" class="modern-button btn-danger" aria-label="Annuler le dernier coup" onclick="undo();">
                     Annuler le coup
                 </button>
                 <button class="modern-button btn-danger" aria-label="Abandonner la partie" onclick="resign();">
@@ -90,6 +123,7 @@
     </div>
     </div>
     <video id="webcam" autoplay playsinline></video>
+    <script src="/public/connect4board.js"></script>
     <script src="/disconnect4/play/play.js"></script>
     <script src="/public/head-tracking.js" type="module"></script>
     <script>

@@ -57,11 +57,10 @@ function fromTextToMove(nsp, text, address) {
 }
 
 
-export const parachessGames = { ParaChessDefaultGame: new Chess() };
-const lastParachessUserGamesId = { Parachess: "ParaChessDefaultGame" };
+export const parachessGames = {};
+const lastParachessUserGamesId = {};
 
 export default function parachessNamespace(io) {
-    parachessGames.ParaChessDefaultGame.onEval = createSendEval(io, 'live');
     const nsp = io.of('/parachess');
 
     startListening(fromTextToMove);

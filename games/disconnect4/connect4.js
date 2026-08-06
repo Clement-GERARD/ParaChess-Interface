@@ -133,13 +133,13 @@ export default class Connect4 {
         if (this.win('r')) {
             this.redWon = true;
             this.gameOver = true;
-            this.reason = "alignement de 4 pions rouges";
+            this.reason = "alignement de 4 pions";
             return;
         }
         if (this.win('b')) {
             this.redWon = true;
             this.gameOver = true;
-            this.reason = "alignement de 4 pions bleus";
+            this.reason = "alignement de 4 pions";
             return;
         }
         if (this.draw()) {
@@ -165,8 +165,8 @@ export default class Connect4 {
         return {
             gameOver: this.gameOver,
             opportunity: this.side,
-            whiteWon: this.whiteWon,
-            blackWon: this.blackWon,
+            redWon: this.redWon,
+            blueWon: this.blueWon,
             reason: this.reason
         };
     }
