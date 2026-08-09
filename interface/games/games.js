@@ -1,9 +1,9 @@
 const gamesList = document.getElementById('game-list');
-let gameName = null;
+let gameURLAddress = null;
 
 async function getGames() {
     try {
-        const res = await fetch('/api/' + gameName + '/games');
+        const res = await fetch('/api/' + gameURLAddress + '/games');
         return await res.json();
     } catch {
         return [];
@@ -15,9 +15,9 @@ async function createGame() {
     const fen = document.getElementById('fen-code').value;
     if (await isValidNewId(id)) {
         if (fen === "" || fen === null || fen === undefined) {
-            window.open('/parachess/play?g=' + id, '_self');
+            window.open('/' + gameURLAddress + '/play?g=' + id, '_self');
         } else {
-            window.open('/parachess/play?g=' + id + "&fen=" + fen, '_self');
+            window.open('/' + gameURLAddress + '/play?g=' + id + "&fen=" + fen, '_self');
         }
     } else {
         document.getElementById("wrong-id-popup").classList.add('visible');
@@ -27,6 +27,16 @@ async function createGame() {
 function closePopups() {
     document.getElementById("wrong-id-popup").classList.remove('visible');
     document.getElementById("wait-popup").classList.remove('visible');
+    document.getElementById("unknown-game-popup").classList.remove('visible');
+}
+
+function displayUnknownNamePopup(text) {
+    document.getElementById("unknown-game-message").innerText = text;
+    document.getElementById("unknown-game-popup").classList.add('visible');
+}
+
+function goToMenu() {
+    window.open('/', '_self');
 }
 
 async function isValidNewId(newId) {
@@ -38,13 +48,33 @@ async function isValidNewId(newId) {
     return newId !== null && newId !== undefined && newId !== "";
 }
 
+async function loadGameInfo(gameURL) {
+    const json =  await (await fetch('/api/' + gameURL + '/game')).json();
+    if (json.status === 'error') {
+        displayUnknownNamePopup(json.error);
+        return;
+    }
+    const game = json.game;
+    document.title += " à " + game.name;
+    document.getElementById('logo-button-1').innerText = game.char1;
+    document.getElementById('logo-button-2').innerText = game.char2;
+    if (!game.askFen) document.getElementById("fen-form").classList.add("hidden");
+}
+
 window.onload = async _ => {
     const search = new URLSearchParams(window.location.search);
-    if (!search.has('g')) window.open('/', '_self');
-    gameName = search.get('g');
+    if (!search.has('g')) {
+        displayUnknownNamePopup("Le jeu auquel vous souhaitez jouer n'est pas renseigner.")
+        return;
+    }
+    const gameURL = search.get('g');
     const validGameNames = await (await fetch('/api/games')).json();
-    if (!validGameNames.includes(gameName)) window.open('/', '_self');
-
+    if (!validGameNames.includes(gameURL)) {
+        displayUnknownNamePopup("Le jeu auquel vous souhaitez jouer nous est incconnu : \"" + gameURL + "\".")
+        return; 
+    }
+    gameURLAddress = gameURL;
+    loadGameInfo(gameURL);
     const games = await getGames();
     const gamesList = document.getElementById('game-list');
     if (games.length === 0) {
@@ -62,7 +92,7 @@ window.onload = async _ => {
             p.appendChild(text);
             if (game.playable) {
                 const play = document.createElement('a');
-                play.href = "/" + gameName + "/play?g=" + game.name;
+                play.href = "/" + gameURLAddress + "/play?g=" + game.name;
                 play.innerText = "Jouer"
                 p.appendChild(play);
             } else {
@@ -72,7 +102,7 @@ window.onload = async _ => {
                 p.appendChild(play);
             }
             const watch = document.createElement('a');
-            watch.href = "/" + gameName + "/watch?g=" + game.name;
+            watch.href = "/" + gameURLAddress + "/watch?g=" + game.name;
             watch.innerText = "Regarder";
             p.appendChild(watch);
             container.appendChild(p);
@@ -87,7 +117,7 @@ window.onload = async _ => {
 
 async function createGameAutomatically() {
     document.getElementById('wait-popup').classList.add("visible");
-    const req = await fetch("/api/" + gameName + "/create-game");
+    const req = await fetch("/api/" + gameURLAddress + "/create-game");
     const name = (await req.json()).name;
-    window.open('/' + gameName + '/play?g=' + name, '_self');
+    window.open('/' + gameURLAddress + '/play?g=' + name, '_self');
 }

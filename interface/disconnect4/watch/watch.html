@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/disconnect4/watch/watch.css" />
     <link rel="stylesheet" href="/public/style.css" />
     <link rel="icon" href="/public/assets/favicon.ico" />
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+        integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
+        crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="head-tracker"></div>
@@ -32,14 +35,14 @@
         </div>
         <div class="popupBackground"></div>
     </div>
-    <div id="confirmation-popup" class="popup">
+    <div id="state-popup" class="popup">
         <div class="popup-body">
-            <h3 class="confirmation-popup-title">
-                Êtes-vous sûr de vouloir abandonner ?
+            <h3 id="state-popup-title">
+                Partie en cours
             </h3>
             <div class="inline-options">
-                <button class="popup-option" onclick="validateResign(false);">Non</button>
-                <button class="popup-option" onclick="validateResign(true);">Oui</button>
+                <button class="popup-option" onclick="hideAll();">Fermer</button>
+                <button class="popup-option" onclick="goToMenu();">Retour au menu !</button>
             </div>
         </div>
         <div class="popupBackground">
@@ -76,21 +79,16 @@
                 Trait au bleu 🔵.
             </div>
         <div class="button-group">
-                <button class="modern-button icon-button" onclick="resetGame();" aria-label="Recommencer la partie">
+                <button class="modern-button icon-button" onclick="goToMenu();" aria-label="Recommencer la partie">
                     <img src="/public/assets/reset.svg" alt="" class="button-icon" />
-                    <span>Recommencer la partie</span>
-                </button>
-                <button class="modern-button btn-danger" aria-label="Annuler le dernier coup" onclick="undo();">
-                    Annuler le coup
-                </button>
-                <button class="modern-button btn-danger" aria-label="Abandonner la partie" onclick="resign();">
-                    Abandonner la partie
+                    <span>Retour au menu</span>
                 </button>
         </div>
     </div>
     </div>
     <video id="webcam" autoplay playsinline></video>
-    <script src="/disconnect4/play/watch.js"></script>
+    <script src="/disconnect4/watch/watch.js"></script>
+    <script src="/public/connect4board.js"></script>
     <script src="/public/head-tracking.js" type="module"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

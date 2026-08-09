@@ -94,6 +94,17 @@
             </div>
             <div class="popupBackground"></div>
         </div>
+        <div id="unknown-game-popup" class="popup">
+            <div class="popup-body">
+                <h3>
+                    Une erreur est survenue !
+                </h3>
+                <p id="unknown-game-message">Rien à signaler</p>
+            </div>
+            <div class="inline-options">
+                <button class="popup-option" onclick="goToMenu();">Menu principal</button>
+            </div>
+        </div>
         <div id="content">
             <div id="header">
                 <a href="/" id="return" aria-label="Retourner au menu">
@@ -110,10 +121,11 @@
                  </a>
             </div>
             <img class="background" src="/public/assets/background.svg" alt="" />
+            
             <div id="separate">
                                 <div class="panel" id="right">
                     <h2>
-                        <div class="logo-button">♕</div>
+                        <div id="logo-button-1" class="logo-button"></div>
                         Créer une nouvelle partie
                     </h2>
                     <br />
@@ -131,18 +143,20 @@
                         <input id="id" name="id" type="text" selected placeholder="Nom de la partie" />
                         <br />
                         <br />
-                        <label for="fen-code">
-                            Code FEN (optionnel) :
-                        </label>
-                        <input id="fen-code" name="fen" type="text" placeholder="Position initiale" />
-                        <br />
-                        <br />
+                        <div id="fen-form">
+                            <label for="fen-code">
+                                Code FEN (optionnel) :
+                            </label>
+                            <input id="fen-code" name="fen" type="text" placeholder="Position initiale" />
+                            <br />
+                            <br />
+                        </div>
                         <button id="create" aria-label="Créer la partie" class="modern-button" onclick="createGame();" select>Créer</button>
                     </div>
                 </div>
                 <div class="panel" id="left">
                     <h2>
-                        <div class="logo-button">♔</div>
+                        <div id="logo-button-2" class="logo-button"></div>
                         Rejoindre une partie existante
                     </h2>
                     <br />

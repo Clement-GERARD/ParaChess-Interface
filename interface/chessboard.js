@@ -558,7 +558,7 @@ function showState(text) {
 }
 
 function goToMenu() {
-    window.open('/games/', '_self');
+    window.open('/games/?g=parachess', '_self');
 }
 
 function setChessBoard() {

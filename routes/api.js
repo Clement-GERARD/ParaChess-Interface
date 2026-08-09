@@ -5,6 +5,27 @@ import { disconnect4Games } from '../namespaces/disconnect4.js';
 import { Chess } from '../games/parachess/chess.js';
 import { deflate } from "zlib";
 
+const games = [
+    {
+        name: "ParaChess",
+        url: "parachess",
+        char1: '♕',
+        char2: '♔',
+        askFen: true,
+        maxHours: 2,
+        games: parachessGames
+    },
+    {
+        name: "DiscConnect 4",
+        url: "disconnect4",
+        char1: '🔴',
+        char2: '🔵',
+        askFen: false,
+        maxHours: .25,
+        games: disconnect4Games
+    }
+];
+
 const CHESS_MAX_HOURS = 2;
 const CONNECT4_MAX_HOURS = .25;
 const router = Router();
@@ -12,74 +33,78 @@ const router = Router();
 export default function() {
 
     router.get('/games', (req, res) => {
-        res.send(["parachess", "disconnect4"]);
+        let gamesURL = []
+        games.forEach(game =>  gamesURL.push(game.url));
+        res.send(gamesURL);
+    });
+
+    router.get('/:game/game', (req, res) => {
+        const gameURL = req.params.game;
+        let jsonGame = {};
+        const toDelete = [];
+        let found = false;
+        for (let i = 0; i < games.length; i++) {
+            if (games[i].url !== gameURL)
+                continue;
+            found = true;
+            jsonGame = {
+                name: games[i].name,
+                url: games[i].url,
+                char1: games[i].char1,
+                char2: games[i].char2,
+                askFen: games[i].askFen,
+                maxHours: games[i].maxHours
+            }
+            break;
+        }
+        const result = found ? { 'status': 'ok', 'game': jsonGame } : { 'status': 'error', 'error': 'Jeu inconnu: "' + gameURL + '"' };
+        res.send(result);
     });
 
     router.get('/:game/games', (req, res) => {
-        const gameName  = req.params.game;
+        const gameURL  = req.params.game;
         const jsonList = [];
         const toDelete = [];
-        switch (gameName) {
-            case "parachess":
-                toDelete.splice(0, toDelete.length);
-                Object.keys(parachessGames).forEach(id => {
-                    if (Date.now() - parachessGames[id].lastMoveTime > CHESS_MAX_HOURS * 3600000) // 2h / move
-                        toDelete.push(id);
+        let found = false;
+        for (let i = 0; i < games.length; i++) {
+            if (games[i].url !== gameURL)
+                continue;
+            found = true;
+            toDelete.splice(0, toDelete.length);
+            Object.keys(games[i].games).forEach(id => {
+                if (Date.now() - games[i].games[id].lastMoveTime > games[i].maxHours * 3600000)
+                    toDelete.push(id);
+            });
+            toDelete.forEach(id => delete games[i].games[id]);
+            Object.keys(games[i].games).forEach(game => {
+                jsonList.push({
+                    name: game,
+                    playable: games[i].games[game].isPlayable()
                 });
-                toDelete.forEach(id => delete parachessGames[id]);
-                Object.keys(parachessGames).forEach(game => {
-                    jsonList.push({
-                        name: game,
-                        playable: parachessGames[game].isPlayable()
-                    });
-                });
-                break;
-            case "disconnect4":
-                toDelete.splice(0, toDelete.length);
-                Object.keys(disconnect4Games).forEach(id => {
-                    if (Date.now() - disconnect4Games[id].lastMoveTime > CONNECT4_MAX_HOURS * 3600000) // 15min / move
-                        toDelete.push(id);
-                });
-                toDelete.forEach(id => delete disconnect4Games[id]);
-                Object.keys(disconnect4Games).forEach(game => {
-                    jsonList.push({
-                        name: game,
-                        playable: disconnect4Games[game].isPlayable()
-                    });
-                });
-                break;
-            default:
-                jsonList["error"] = "Unknown game !";
-                break;
+            });
+            break;
         }
+        const result = found ? {'status': 'ok', 'games': jsonList } : {'status': 'error', 'error': 'Jeu inconnu: "' + gameURL + '"'};
         res.send(jsonList);
     });
 
     router.get('/:game/create-game', (req, res) => {
-
-        const gameName = req.params.game;
+        const gameURL = req.params.game;
         let validName = null;
-        let i = 1;
-        switch (gameName) {
-            case "parachess":
-                i = 1;
-                while (Object.keys(parachessGames).includes('ParaChess-' + i)) {
-                    i++;
-                }
-                validName = 'ParaChess-' + i;
-                break;
-            case "disconnect4":
-                i = 1;
-                while (Object.keys(disconnect4Games).includes('DisConnect4-' + i)) {
-                    i++;
-                }
-                validName = 'DisConnect4-' + i;
-                break;
-            default:
-                validName = "Error :  unknown game !";
-                break;
+        let found = false;
+        let j = 1;
+        for (let i = 0; i < games.length; i++) {
+            if (games[i].url !== gameURL)
+                continue;
+            found = true;
+            while (Object.keys(games[i].games).includes(games[i].name + '-' + j)) {
+                j++;
+            }
+            validName = games[i].name + '-' + j;
+            break;
         }
-        res.send({name: validName});
+        const result = found ? {'status': 'ok', 'name': validName} : {'status': 'error', 'error': 'Jeu inconnu: "' + gameURL + '"'};
+        res.send(result);
     });
 
     return router;

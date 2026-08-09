@@ -59,6 +59,10 @@ function createBoardGrid() {
             td.id = 'ligne_' + i + '_col_' + j;
             if (positions[positionsIndex][i - 1][j - 1] === 'r') td.style.backgroundColor = 'red';
             else if (positions[positionsIndex][i - 1][j - 1] === 'b') td.style.backgroundColor = 'blue';
+            else  {
+                td.onclick = (_) => pushPawn(j);
+                td.style.cursor = 'pointer';
+            }
             tr.appendChild(td);
         }
     }

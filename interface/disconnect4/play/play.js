@@ -22,7 +22,7 @@ function connection() {
         createButtonGrid();
     });
 
-    socket?.on('legalColumns', columns => { // set some to illegal (display in black)
+    socket?.on('legalColumns', columns => {
         legalColumns = columns;
     });
 
