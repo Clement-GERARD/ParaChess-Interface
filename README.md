@@ -1,6 +1,6 @@
-# ParaChess-Interface
+# ParaGames-Interface
 
-Interface de ParaChess
+Interface de ParaGames
 
 
 

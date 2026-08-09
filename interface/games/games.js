@@ -62,15 +62,16 @@ async function loadGameInfo(gameURL) {
 }
 
 window.onload = async _ => {
+    window.goToMenu = goToMenu;
     const search = new URLSearchParams(window.location.search);
     if (!search.has('g')) {
-        displayUnknownNamePopup("Le jeu auquel vous souhaitez jouer n'est pas renseigner.")
+        displayUnknownNamePopup("Le jeu auquel vous souhaitez jouer n'est pas renseigné.")
         return;
     }
     const gameURL = search.get('g');
     const validGameNames = await (await fetch('/api/games')).json();
     if (!validGameNames.includes(gameURL)) {
-        displayUnknownNamePopup("Le jeu auquel vous souhaitez jouer nous est incconnu : \"" + gameURL + "\".")
+        displayUnknownNamePopup("Le jeu auquel vous souhaitez jouer est inconnu : \"" + gameURL + "\".")
         return; 
     }
     gameURLAddress = gameURL;
