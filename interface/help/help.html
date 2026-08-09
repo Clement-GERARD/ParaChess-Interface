@@ -2,8 +2,10 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Parachess | Politique de cookies</title>
+    <meta charset="utf-8" />
+    <title>
+        ParaGames | Contrôles
+    </title>
     <link rel="stylesheet" href="/public/style.css" />
     <link rel="icon" href="/public/assets/favicon.ico" />
 </head>
@@ -23,7 +25,7 @@
                         i = 0;
                         deactivateFacialDetection();
                     }
-                } 
+                }
                 else if (e.key === 'r') {
                     window.open(window.location.origin, '_self'); // Aller au Menu
                 } 
@@ -60,27 +62,40 @@
     </div>
     <div id="content">
         <div id="header">
-            <a href="/" id="return" aria-label="Retourner au menu"><img src="/public/assets/return.svg" alt="return" /></a>
-            <a href="/"><img id="logo" src="/public/assets/parachess_logo.svg" alt="Logo Parachess" /></a>
+            <a href="/" id="return" aria-label="Retourner au menu">
+                <img src="/public/assets/return.svg" alt="return" />
+            </a>
+            <a href="/">
+                <img id="logo" src="/public/assets/parachess_logo.svg" alt="Logo Parachess" />
+            </a>
             <button id="toggle-facial-button" class="facial-active" aria-label="Activer/Désactiver le suivi du visage"
                 onclick="displayFacialDetectionPopup(event);">
                 <img id="toggle-face-button-image" src="/public/assets/eye-open.svg" alt="🔴" />
             </button>
         </div>
         <img class="background" src="/public/assets/background.svg" alt="" />
-        <div class="panel">
-            <h1>Politique de Cookies</h1>
-            <div id="text">
-                <h3>1. Qu'est-ce qu'un cookie ?</h3>
-                <p>Un cookie est un petit fichier texte déposé sur votre ordinateur, tablette ou smartphone lors de la visite d'un site web. Il permet au site de mémoriser vos actions et préférences (telles que la connexion, la langue, la taille de la police et d'autres préférences d'affichage) sur une période donnée.</p>
 
-                <h3>2. Utilisation des cookies sur Parachess</h3>
-           
-                <h3>3. Vos choix concernant les cookies</h3>
-            </div>
+
+        <div class="panel">
+
+            <h1>Contrôles</h1>
+
+            <h3>Comment utiliser ParaGames ?</h3>
+            <p>
+                ParaGames propose quatres modes de contrôle, utilisables séparément ou en combinaison:
+            </p>
+            <ul>
+                <li><strong>Souris / écran tactile</strong></li>
+                <li><strong>Reconnaissance faciale</strong> : bougez la tête pour déplacer le curseur rouge, et clignez
+                    des yeux pour cliquer. La sensibilité peut être ajustée dans les paramètres.</li>
+                <li><strong>Clavier</strong> : utilisez les touches du clavier (tabulation, flèches, entrée et espace) pour naviguer et cliquer.</li>
+                <li><strong>Reconnaissance vocale</strong> : utilisez des commandes vocales pour interagir avec le jeu.</li>
+
+            </ul>
         </div>
     </div>
     <video id="webcam" autoplay playsinline></video>
     <script src="/public/head-tracking.js" type="module"></script>
 </body>
+
 </html>

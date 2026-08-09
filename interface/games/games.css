@@ -87,6 +87,12 @@ button#create.modern-button, button#auto-create.modern-button, #form a.modern-bu
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
+#rules-button img {
+  max-width: 30px;
+  max-height: 30px;
+}
+
+
 #fen-form.hidden {
     display: none;
 }
