@@ -1,9 +1,8 @@
-import { rec, startListening, transform } from '../receive-audio.js';
 import Connect4 from '../games/disconnect4/connect4.js';
+import { recPuissance4, transform, grammarPuissance4 } from '../receive-audio.js';
 
 function fromTextToMove(nsp, text, address) {
     const ip = extractIP(address);
-
     if (!lastDisconnect4UserGamesId[ip]) return;
     const id = lastDisconnect4UserGamesId[ip];
     if (!disconnect4Games[id]) return;
@@ -11,14 +10,15 @@ function fromTextToMove(nsp, text, address) {
 
     const game = disconnect4Games[id];
     const lowerCaseText = text.toLowerCase();
-    const regex = /\b[1-7]\b/g;
-    const columns = lowerCaseText.match(regex);
 
     if (lowerCaseText.includes('non') || lowerCaseText.includes('annuler')) return;
 
-    if (!squares || columns?.length < 1) return;
+    const regex = /colonne\s*([1-7])\b/;
+    const match = lowerCaseText.match(regex);
+    if (!match) return;
 
-    console.log(lastDisconnect4UserGamesId[ip] + " : " + columns[0] + game.play("DISCONNECT4", columns[0]));
+    const column = match[1];
+    const result = game.play(ip, Number(column));
     game.displayBoard();
 
     nsp.to('game:' + id).emit('boardStates', game.getPositions());
@@ -124,10 +124,10 @@ export default function disconnect4Namespace(io) {
                 ? buffer
                 : Buffer.from(buffer);
             const uint8 = new Uint8Array(audioBuffer);
-            if (rec.acceptWaveform(uint8)) {
-                const result = rec.result();
+            if (recPuissance4.acceptWaveform(uint8)) {
+                const result = recPuissance4.result();
                 if (result?.text) {
-                    fromTextToMove(nsp, transform(result.text), ip);
+                    fromTextToMove(nsp, transform(result.text, grammarPuissance4), ip);
                 }
             }
         });

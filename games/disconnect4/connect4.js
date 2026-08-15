@@ -137,7 +137,7 @@ export default class Connect4 {
             return;
         }
         if (this.win('b')) {
-            this.redWon = true;
+            this.blueWon = true;
             this.gameOver = true;
             this.reason = "alignement de 4 pions";
             return;

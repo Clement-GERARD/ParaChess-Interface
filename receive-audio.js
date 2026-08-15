@@ -53,37 +53,43 @@ Object.entries(alphabetHomophones).forEach(([letter, syns]) => syns.forEach(s =>
 Object.entries(chiffresHomophones).forEach(([digit, syns]) => syns.forEach(s => reverseMap[s] = digit));
 Object.entries(puissance4Homophones).forEach(([word, syns]) => syns.forEach(s => reverseMap[s] = word));
 
-const grammar = [...pieces, ...ordre, ...ignore, ...vocMenu, ...vocPuissance4];
+const grammarChess = [...pieces, ...ordre, ...ignore, ...vocMenu];
 
 Object.values(alphabetHomophones).forEach(letterSyns => {
     Object.values(chiffresHomophones).forEach(digitSyns => {
         letterSyns.forEach(ls => {
             digitSyns.forEach(ds => {
-                grammar.push(`${ls} ${ds}`);
+                grammarChess.push(`${ls} ${ds}`);
             });
         });
     });
 });
 
+Object.values(alphabetHomophones).forEach(syns => grammarChess.push(...syns));
+Object.values(chiffresHomophones).forEach(syns => grammarChess.push(...syns));
+
+const grammarPuissance4 = [...ordre, ...vocMenu, ...vocPuissance4];
+
 const chiffresPuissance4 = ["un", "deux", "trois", "quatre", "cinq", "six", "sept"];
 puissance4Homophones["colonne"].forEach(colSyn => {
     chiffresPuissance4.forEach(chiffreKey => {
         chiffresHomophones[chiffreKey].forEach(digitSyn => {
-            grammar.push(`${colSyn} ${digitSyn}`);
+            grammarPuissance4.push(`${colSyn} ${digitSyn}`);
         });
     });
 });
 
-Object.values(alphabetHomophones).forEach(syns => grammar.push(...syns));
-Object.values(chiffresHomophones).forEach(syns => grammar.push(...syns));
-Object.values(puissance4Homophones).forEach(syns => grammar.push(...syns));
+Object.values(chiffresHomophones).forEach(syns => grammarPuissance4.push(...syns));
+Object.values(puissance4Homophones).forEach(syns => grammarPuissance4.push(...syns));
 
-console.log('[✱] Ecoute du flux audio sur le port')
+export { grammarChess, grammarPuissance4 };
+
 console.log("[✱] Chargement du modèle Vosk");
 
 vosk.setLogLevel(-1)
 const model = new vosk.Model(MODEL_PATH);
-export const rec = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar });
+export const recChess = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarChess });
+export const recPuissance4 = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarPuissance4 });
 console.log("[✱] Modèle Vosk chargé");
 
 export function startListening(callback) {
@@ -112,9 +118,18 @@ export function startListening(callback) {
     server.bind(PORT, HOST);
 };
 
-export function transform(text) {
-    let cleanText = text.split(" ").map(w => reverseMap[w] || w).join(" ");
-    return cleanText.replaceAll(" un", "1").replaceAll(" deux", "2").replaceAll(" trois", "3").replaceAll(" quatre", '4').replaceAll(" cinq", '5').replaceAll(" six", '6').replaceAll(" sept", "7").replaceAll(" huit", "8");
+const motVersChiffre = {
+    "un": "1", "deux": "2", "trois": "3", "quatre": "4",
+    "cinq": "5", "six": "6", "sept": "7", "huit": "8"
+};
+
+export function transform(text, grammar) {
+    return text
+        .split(" ")
+        .map(w => reverseMap[w] || w)
+        .map(w => motVersChiffre[w] || w)
+        .filter(w => grammar.includes(w) || /^[1-7]$/.test(w))
+        .join(" ");
 }
 
 // startListening((text, address) => {

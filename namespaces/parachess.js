@@ -1,5 +1,5 @@
 import { Chess, PROMOTIONS_PIECES_NAME } from '../games/parachess/chess.js';
-import { rec, startListening, transform } from '../receive-audio.js';
+import { recChess, transform, grammarChess, startListening } from '../receive-audio.js';
 
 function createSendEval(io, gameId) {
     return function (payload) {
@@ -25,12 +25,12 @@ function fromTextToMove(nsp, text, address) {
 
     const game = parachessGames[id];
     const lowerCaseText = text.toLowerCase();
-    const regex = /\b[a-h][1-8]\b/g;
-    const squares = lowerCaseText.match(regex);
+    const regex = /\b([a-h])\s?([1-8])\b/g;
+    const squares = [...lowerCaseText.matchAll(regex)].map(m => m[1] + m[2]);
 
     if (lowerCaseText.includes('non') || lowerCaseText.includes('annuler')) return;
 
-    if (!squares || squares?.length < 2) return;
+    if (!squares || squares.length < 2) return;
 
     const lastSquareIndex = lowerCaseText.lastIndexOf(squares[1]);
     let firstPieceIndex = -1;
@@ -48,7 +48,7 @@ function fromTextToMove(nsp, text, address) {
         else piece = "r";                                               // Rook
     }
 
-    console.log(lastParachessUserGamesId[ip] + " : " + squares[0] + "-" + squares[1] + " (" + piece + "): " + game.play("PARACHESS", squares[0], squares[1], piece));
+    console.log(lastParachessUserGamesId[ip] + " : " + squares[0] + "-" + squares[1] + " (" + piece + "): " + game.play(ip, squares[0], squares[1], piece));
     game.displayBoard();
 
     nsp.to('game:' + id).emit('boardStates', game.getPositions());
@@ -171,10 +171,10 @@ export default function parachessNamespace(io) {
                 ? buffer
                 : Buffer.from(buffer);
             const uint8 = new Uint8Array(audioBuffer);
-            if (rec.acceptWaveform(uint8)) {
-                const result = rec.result();
+            if (recChess.acceptWaveform(uint8)) {
+                const result = recChess.result();
                 if (result?.text) {
-                    fromTextToMove(nsp, transform(result.text), ip);
+                    fromTextToMove(nsp, transform(result.text, grammarChess), ip);
                 }
             }
         });
