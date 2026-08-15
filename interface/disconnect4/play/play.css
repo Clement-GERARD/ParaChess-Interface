@@ -6,7 +6,7 @@
        pour ne pas déborder en hauteur, avec un maximum absolu de 80px".
     Length de référence automatique pour le jeu.
     */
-    --size-case: clamp(35px, min(10vw, 7vh), 80px);
+    --size-case: clamp(40px, min(13vw, 9vh), 100px);
 }
 
 body {
@@ -59,7 +59,7 @@ body {
 }
 
 #buttons-table button:not(#buttons-table button.illegal) {
-    background-color: #e74c3c;
+    background-color: #e9c46a;
     cursor: pointer;
 }
 
@@ -68,7 +68,7 @@ body {
 }
 
 #buttons-table button:hover:not(#buttons-table button.illegal) {
-    background-color: #c0392b;
+    background-color: #d4a373;
     transform: scale(1.05);
 }
 
