@@ -28,14 +28,14 @@ const alphabetHomophones = {
 };
 
 const chiffresHomophones = {
-    "un": ["un", "hein", "une"],
-    "deux": ["deux", "de"],
-    "trois": ["trois"],
-    "quatre": ["quatre"],
-    "cinq": ["cinq"],
-    "six": ["six", "si", "scie"],
-    "sept": ["sept", "cet", "cette", "set"],
-    "huit": ["huit", "oui"]
+    "1": ["un", "hein", "une"],
+    "2": ["deux", "de"],
+    "3": ["trois"],
+    "4": ["quatre"],
+    "5": ["cinq"],
+    "6": ["six", "si", "scie"],
+    "7": ["sept", "cet", "cette", "set"],
+    "8": ["huit", "oui"]
 };
 
 const puissance4Homophones = {
@@ -69,8 +69,8 @@ Object.values(alphabetHomophones).forEach(syns => grammarChess.push(...syns));
 Object.values(chiffresHomophones).forEach(syns => grammarChess.push(...syns));
 
 const grammarPuissance4 = [...ordre, ...vocMenu, ...vocPuissance4];
+const chiffresPuissance4 = ["1", "2", "3", "4", "5", "6", "7"];
 
-const chiffresPuissance4 = ["un", "deux", "trois", "quatre", "cinq", "six", "sept"];
 puissance4Homophones["colonne"].forEach(colSyn => {
     chiffresPuissance4.forEach(chiffreKey => {
         chiffresHomophones[chiffreKey].forEach(digitSyn => {
@@ -90,6 +90,7 @@ vosk.setLogLevel(-1)
 const model = new vosk.Model(MODEL_PATH);
 export const recChess = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarChess });
 export const recPuissance4 = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarPuissance4 });
+
 console.log("[✱] Modèle Vosk chargé");
 
 export function startListening(callback) {
@@ -118,17 +119,19 @@ export function startListening(callback) {
     server.bind(PORT, HOST);
 };
 
-const motVersChiffre = {
-    "un": "1", "deux": "2", "trois": "3", "quatre": "4",
-    "cinq": "5", "six": "6", "sept": "7", "huit": "8"
-};
+export function transform(text) {
+    const validWords = new Set([
+        ...Object.values(reverseMap),
+        ...pieces,
+        ...ordre,
+        ...ignore,
+        ...vocMenu
+    ]);
 
-export function transform(text, grammar) {
     return text
         .split(" ")
         .map(w => reverseMap[w] || w)
-        .map(w => motVersChiffre[w] || w)
-        .filter(w => grammar.includes(w) || /^[1-7]$/.test(w))
+        .filter(w => validWords.has(w))
         .join(" ");
 }
 
