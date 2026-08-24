@@ -6,8 +6,11 @@
     <title>Portail des Jeux - ParaChess & DisConnect 4</title>
     <link rel="stylesheet" href="/public/portal.css">
     <link rel="icon" href="/public/assets/favicon.ico" />
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+        integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
+        crossorigin="anonymous"></script>
 </head>
-<body>
+<body data-voice-page="index">
     <!-- Head Tracking Elements (from old index) -->
     <div id="head-tracker"></div>
     <div id="face-detection-popup" class="popup">
@@ -30,8 +33,11 @@
     </div>
 
     <!-- Toggle Facial Button -->
-    <button id="toggle-facial-button" class="facial-active" aria-label="Paramètres du suivi du visage" onclick="displayFacialDetectionPopup();">
-        <img id="toggle-face-button-image" src="/public/assets/eye-open.svg" alt="🔴" />
+    <button id="toggle-facial-button" class="facial-active" aria-label="Activer/Désactiver le suivi du visage" onclick="displayFacialDetectionPopup(event);">
+                <img id="toggle-face-button-image" src="/public/assets/eye-open.svg" alt="🔴" />
+            </button>
+    <button id="toggle-vocal-button" class="vocal-active" aria-label="Activer/Désactiver la commande vocale" onclick="toggleVocalMode(event);">
+        <img id="toggle-vocal-button-image" src="/public/assets/mic-on.svg" alt="🎙️" />
     </button>
     <a href="/help/" id="help-button" aria-label="Voir les différents moyens de contrôler ParaGames">
         <img id="help-image" src="/public/assets/help.png" alt="Contrôles" />
@@ -69,7 +75,6 @@
         </a>
     </div>
 
-
     <div class="portal-footer">
         <a href="/about-us/" class="footer-link">Qui sommes-nous ?</a>
         <span class="footer-separator">•</span>
@@ -78,30 +83,7 @@
         <a href="/legal-notice/" class="footer-link">Mentions légales</a>
     </div>
 
-    <video id="webcam" autoplay playsinline style="display:none;"></video>
+    <video id="webcam" autoplay playsinline></video>
     <script src="/public/head-tracking.js" type="module"></script>
-    <script>
-        const keyPressed = {};
-        let i = 0;
-        window.addEventListener('keydown', e => {
-            keyPressed[e.key] = true;
-
-            if (keyPressed['Control'] && keyPressed['Alt']) {
-                if (e.key === 'c') {
-                    if (i === 0) {
-                        i = 1;
-                        if(window.activateFacialDetection) window.activateFacialDetection();
-                    } else {
-                        i = 0;
-                        if(window.deactivateFacialDetection) window.deactivateFacialDetection();
-                    }
-                }
-            }
-        });
-
-        window.addEventListener('keyup', e => {
-            delete keyPressed[e.key];
-        });
-    </script>
+    <script src="/public/voice/voice-general.js"></script>
 </body>
-</html>

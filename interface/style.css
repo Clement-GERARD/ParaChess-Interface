@@ -275,6 +275,7 @@ body {
 #rules-button {
   position: absolute;
   top: 30px;
+  right: 40px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   border: 2px solid transparent;
@@ -299,24 +300,28 @@ body {
   max-height: 30px;
 }
 
-#toggle-facial-button, #rules-button {
-  right: 40px;
-}
-
+/* Boutons empilés verticalement les uns sous les autres, en s'adaptant
+   à la présence ou non de chaque bouton (certaines pages n'ont pas
+   toutes les icônes, ex : bouton "règles" absent). */
 #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button {
-  right: 120px;
+  top: 100px;
 }
 
 #toggle-facial-button.hidden ~ #toggle-vocal-button {
-  right: 40px;
+  top: 30px;
 }
 
-#toggle-facial-button ~ #rules-button {
+#toggle-facial-button:not(.hidden) ~ #toggle-vocal-button:not(.hidden) ~ #rules-button {
+  top: 170px;
+}
+
+#toggle-facial-button.hidden ~ #toggle-vocal-button:not(.hidden) ~ #rules-button,
+#toggle-facial-button:not(.hidden) ~ #toggle-vocal-button.hidden ~ #rules-button {
   top: 100px;
 }
 
-#toggle-facial-button.hidden ~ #toggle-vocal-button ~ #rules-button {
-  top: 100px;
+#toggle-facial-button.hidden ~ #toggle-vocal-button.hidden ~ #rules-button {
+  top: 30px;
 }
 
 #toggle-facial-button:hover,
@@ -660,17 +665,31 @@ button:disabled,
     #rules-button {
         position: absolute;
         top: 25px;
+        right: 40px;
         height: 60px;
         width: 60px;
         margin: 0;
     }
 
     #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button {
-        right: 120px;
+        top: 95px;
     }
 
     #toggle-facial-button.hidden ~ #toggle-vocal-button {
-        right: 40px;
+        top: 25px;
+    }
+
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button:not(.hidden) ~ #rules-button {
+        top: 165px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button:not(.hidden) ~ #rules-button,
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button.hidden ~ #rules-button {
+        top: 95px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button.hidden ~ #rules-button {
+        top: 25px;
     }
 
     #return {
@@ -715,18 +734,32 @@ button:disabled,
     #toggle-vocal-button,
     #rules-button {
         position: absolute;
-        top: 25px;
+        top: 20px;
+        right: 20px;
         height: 50px;
         width: 50px;
         margin: 0;
     }
 
     #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button {
-        right: 100px;
+        top: 80px;
     }
 
     #toggle-facial-button.hidden ~ #toggle-vocal-button {
-        right: 40px;
+        top: 20px;
+    }
+
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button:not(.hidden) ~ #rules-button {
+        top: 140px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button:not(.hidden) ~ #rules-button,
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button.hidden ~ #rules-button {
+        top: 80px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button.hidden ~ #rules-button {
+        top: 20px;
     }
 
     #return {

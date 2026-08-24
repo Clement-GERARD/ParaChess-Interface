@@ -1,5 +1,5 @@
 import { Chess, PROMOTIONS_PIECES_NAME } from '../games/parachess/chess.js';
-import { recChess, transform, grammarChess, startListening } from '../receive-audio.js';
+import { recChess, transform, grammarChess, startListening, detectMenuCommand } from '../voice-recognition.js';
 
 function createSendEval(io, gameId) {
     return function (payload) {
@@ -25,6 +25,29 @@ function fromTextToMove(nsp, text, address) {
 
     const game = parachessGames[id];
     const lowerCaseText = text.toLowerCase();
+
+    const menuCommand = detectMenuCommand(lowerCaseText);
+    if (menuCommand) {
+        nsp.to('game:' + id).emit('voice-command', menuCommand);
+        return;
+    }
+
+    if (lowerCaseText.includes('abandonner')) {
+        game.resign(game.getPlayer(ip));
+        nsp.to('game:' + id).emit('state', game.getState());
+        return;
+    }
+
+    if (lowerCaseText.includes('recommencer') || lowerCaseText.includes('rejouer')) {
+        parachessGames[id].clear();
+        parachessGames[id] = new Chess(createSendEval(ioRef, id), Chess.DEFAULT_FEN, game.getInvertedUser());
+        nsp.to('game:' + id).emit('boardStates', parachessGames[id].getPositions());
+        nsp.to('game:' + id).emit('legalMoves', parachessGames[id].getAllLegalMoves());
+        nsp.to('game:' + id).emit('state', parachessGames[id].getState());
+        nsp.to('game:' + id).emit('eval', parachessGames[id].getEval());
+        return;
+    }
+    
     const regex = /\b([a-h])\s?([1-8])\b/g;
     const squares = [...lowerCaseText.matchAll(regex)].map(m => m[1] + m[2]);
 
@@ -59,8 +82,10 @@ function fromTextToMove(nsp, text, address) {
 
 export const parachessGames = {};
 const lastParachessUserGamesId = {};
+let ioRef = null;
 
 export default function parachessNamespace(io) {
+    ioRef = io;
     const nsp = io.of('/parachess');
 
     startListening(fromTextToMove);

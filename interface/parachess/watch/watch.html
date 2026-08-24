@@ -106,6 +106,10 @@
             <button id="toggle-facial-button" class="facial-active" aria-label="Activer/Désactiver le suivi du visage" onclick="displayFacialDetectionPopup(event);">
                 <img id="toggle-face-button-image" src="/public/assets/eye-open.svg" alt="🔴" />
             </button>
+            <button id="toggle-vocal-button" class="vocal-active" aria-label="Activer/Désactiver la commande vocale"
+                onclick="toggleVocalMode(event);">
+                <img id="toggle-vocal-button-image" src="/public/assets/mic-on.svg" alt="🎙️" />
+            </button>
         </div>
         <img class="background" src="/public/assets/background.svg" alt="" />
         
@@ -204,6 +208,7 @@
     </div>
     <video id="webcam" autoplay playsinline></video>
     <script src="/parachess/watch/watch.js"></script>
+    <script src="/public/voice/voice-parachess-watch.js"></script>
     <script src="/public/chessboard.js"></script>
     <script src="/public/head-tracking.js" type="module"></script>
 </body>

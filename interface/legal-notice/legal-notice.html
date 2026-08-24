@@ -6,6 +6,9 @@
     <title>ParaGames | Mentions Légales</title>
     <link rel="stylesheet" href="/public/style.css" />
     <link rel="icon" href="/public/assets/favicon.ico" />
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+        integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
+        crossorigin="anonymous"></script>
 </head>
 <script>
     const keyPressed = {};
@@ -25,7 +28,7 @@
                     }
                 } 
                 else if (e.key === 'r') {
-                    window.open(window.location.origin, '_self'); // Aller au Menu
+                    window.open(window.location.origin, '_self');
                 } 
             }
         });
@@ -34,7 +37,7 @@
             delete keyPressed[e.key];
         });      
 </script>
-<body>
+<body data-voice-page="legal-notice">
     <div id="head-tracker"></div>
     <div id="face-detection-popup" class="popup">
         <div class="popup-body">
@@ -61,10 +64,14 @@
     <div id="content">
         <div id="header">
             <a href="/" id="return" aria-label="Retourner au menu"><img src="/public/assets/return.svg" alt="return" /></a>
-            <a href="/"><img id="logo" src="/public/assets/paragames_logo.svg" alt="Logo ParaGames" /></a>
+            <a href="/"><img id="logo" src="/public/assets/parachess_logo.svg" alt="Logo ParaGames à créer" /></a>
             <button id="toggle-facial-button" class="facial-active" aria-label="Activer/Désactiver le suivi du visage"
                 onclick="displayFacialDetectionPopup(event);">
                 <img id="toggle-face-button-image" src="/public/assets/eye-open.svg" alt="🔴" />
+            </button>
+            <button id="toggle-vocal-button" class="vocal-active" aria-label="Activer/Désactiver la commande vocale"
+                onclick="toggleVocalMode(event);">
+                <img id="toggle-vocal-button-image" src="/public/assets/mic-on.svg" alt="🎙️" />
             </button>
         </div>
         <img class="background" src="/public/assets/background.svg" alt="" />
@@ -86,5 +93,6 @@
     </div>
     <video id="webcam" autoplay playsinline></video>
     <script src="/public/head-tracking.js" type="module"></script>
+    <script src="/public/voice/voice-general.js"></script>
 </body>
 </html>

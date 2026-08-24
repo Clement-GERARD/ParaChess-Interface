@@ -1,11 +1,4 @@
-/* --- CONFIGURATION GENERALE --- */
 :root {
-    /* 
-       Cette ligne magique (clamp) calcule la taille d'une case.
-       Elle dit : "Fais 10vw (10% de la largeur), mais ne dépasse jamais 7vh (7% de la hauteur) 
-       pour ne pas déborder en hauteur, avec un maximum absolu de 80px".
-    Length de référence automatique pour le jeu.
-    */
     --size-case: clamp(35px, min(10vw, 7vh), 80px);
 }
 
@@ -14,18 +7,13 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    /* Empile les boutons au-dessus du jeu */
     justify-content: center;
-    /* Centre verticalement */
     align-items: center;
-    /* Centre horizontalement */
     font-family: sans-serif;
     gap: calc(var(--size-case) * 0.2);
-    /* L'espace s'adapte aussi ! */
     padding: 10px;
     box-sizing: border-box;
     overflow: hidden;
-    /* Empêche l'apparition de barres de défilement */
 }
 
 #div-button,
@@ -35,21 +23,16 @@ body {
     width: 100%;
 }
 
-/* --- STRUCTURE DES TABLEAUX --- */
 #buttons-table,
 #connect4-table {
     border-collapse: separate;
-    /* L'espace entre les cases devient proportionnel à la taille des cases */
     border-spacing: calc(var(--size-case) * 0.12);
     box-sizing: border-box;
 }
 
-/* --- GRILLE DE BOUTONS (En haut) --- */
 #buttons-table td {
     width: var(--size-case);
-    /* S'adapte dynamiquement */
     height: calc(var(--size-case) * 0.5);
-    /* Moitié moins haut qu'une case */
     padding: 0;
 }
 
@@ -59,10 +42,8 @@ body {
     color: white;
     border: none;
     border-radius: calc(var(--size-case) * 0.1);
-    /* Arrondi fluide */
     font-weight: bold;
     font-size: calc(var(--size-case) * 0.3);
-    /* Le texte s'adapte pour ne pas déborder */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -83,7 +64,6 @@ body {
     transform: scale(1.05);
 }
 
-/* --- GRILLE DE JEU (En bas) --- */
 #connect4-table {
     background-color: #2c3e50;
     border-radius: calc(var(--size-case) * 0.15);
@@ -93,12 +73,9 @@ body {
 
 #connect4-table td {
     width: var(--size-case);
-    /* Devient plus petit sur petit écran, grand sur grand écran */
     height: var(--size-case);
-    /* Reste parfaitement carré */
     background-color: #111;
     border-radius: 50%;
-    /* Trous toujours parfaitement ronds */
     padding: 0;
 }
 

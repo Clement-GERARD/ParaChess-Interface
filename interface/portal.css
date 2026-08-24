@@ -22,6 +22,7 @@ body {
     align-items: center;
     justify-content: center;
     overflow-x: hidden;
+    padding: 60px 20px 60px;
 }
 
 .background {
@@ -38,7 +39,7 @@ body {
 
 .portal-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 3.5rem;
     animation: fadeInDown 0.8s ease-out;
 }
 .portal-header h1 {
@@ -325,8 +326,12 @@ body {
     margin-top: 1rem;
 }
 
-/* Setup eye tracking button */
-#toggle-facial-button {
+/* Boutons de l'entête : suivi du visage, commande vocale, aide.
+   Empilés verticalement les uns sous les autres, en s'adaptant à la
+   présence ou non du bouton micro (masqué si le micro n'est pas disponible). */
+#toggle-facial-button,
+#toggle-vocal-button,
+#help-button {
     position: absolute;
     top: 30px;
     right: 40px;
@@ -345,45 +350,84 @@ body {
     z-index: 1000;
 }
 
-#toggle-facial-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-#toggle-facial-button img {
-    max-width: 35px;
-    max-height: 35px;
-}
-
-#help-button {
-    position: absolute;
-    top: 100px;
-    right: 40px;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    border: 2px solid transparent;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
+#toggle-facial-button:hover,
+#toggle-vocal-button:hover,
 #help-button:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
+#toggle-facial-button img,
+#toggle-vocal-button img,
 #help-button img {
     max-width: 35px;
     max-height: 35px;
 }
 
+#toggle-vocal-button.hidden {
+    display: none;
+}
+
+#toggle-facial-button:not(.hidden) ~ #toggle-vocal-button {
+    top: 100px;
+}
+
+#toggle-facial-button.hidden ~ #toggle-vocal-button {
+    top: 30px;
+}
+
+#toggle-facial-button:not(.hidden) ~ #toggle-vocal-button:not(.hidden) ~ #help-button {
+    top: 170px;
+}
+
+#toggle-facial-button.hidden ~ #toggle-vocal-button:not(.hidden) ~ #help-button,
+#toggle-facial-button:not(.hidden) ~ #toggle-vocal-button.hidden ~ #help-button {
+    top: 100px;
+}
+
+#toggle-facial-button.hidden ~ #toggle-vocal-button.hidden ~ #help-button {
+    top: 30px;
+}
+
+@media (max-width: 800px) {
+    #toggle-facial-button,
+    #toggle-vocal-button,
+    #help-button {
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button {
+        top: 80px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button {
+        top: 20px;
+    }
+
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button:not(.hidden) ~ #help-button {
+        top: 140px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button:not(.hidden) ~ #help-button,
+    #toggle-facial-button:not(.hidden) ~ #toggle-vocal-button.hidden ~ #help-button {
+        top: 80px;
+    }
+
+    #toggle-facial-button.hidden ~ #toggle-vocal-button.hidden ~ #help-button {
+        top: 20px;
+    }
+
+    body {
+        padding: 200px 16px 40px;
+    }
+
+    .portal-header h1 {
+        font-size: 2.2rem;
+    }
+}
 
 .portal-footer {
     margin-top: 3rem;

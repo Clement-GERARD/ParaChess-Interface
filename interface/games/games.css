@@ -65,3 +65,38 @@ button#create.modern-button, button#auto-create.modern-button, #form a.modern-bu
 #fen-form.hidden {
     display: none;
 }
+
+@media (max-width: 800px) {
+    #separate {
+        width: 100%;
+        flex-direction: column;
+        height: auto;
+        gap: 30px;
+        padding: 0 16px;
+    }
+
+    #left,
+    #right {
+        width: 100%;
+    }
+
+    #left {
+        height: auto;
+        max-height: 45vh;
+        overflow-y: auto;
+    }
+
+    #right {
+        border-left: none;
+        border-top: 1px solid rgba(0, 32.5, 47.5);
+        padding-top: 20px;
+        height: auto;
+    }
+
+    #id,
+    #fen-code {
+        width: 100%;
+        max-width: 280px;
+        box-sizing: border-box;
+    }
+}

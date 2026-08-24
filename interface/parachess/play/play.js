@@ -13,6 +13,7 @@ function connection() {
     });
 
     socket?.on('side', (status, side) => displayAttemptResult(status, side));
+socket?.on('voice-command', handleVoiceCommand);
 
     socket?.on('boardStates', states => {
         positionsIndex = states.length - 1;
@@ -83,6 +84,9 @@ function connection() {
     if (!search.has('fen')) return;
     socket?.emit('fen', search.get('fen'));
 }
+
+// La gestion des commandes vocales (menu + micro) a été déplacée dans
+// /public/voice/voice-parachess-play.js pour plus de clarté.
 
 function sendMove(from, to) {
     socket?.emit('move', from, to, null);
@@ -157,53 +161,7 @@ function validateResign(validation=false) {
 
 document.getElementById('showCoordinates').onchange = showCoordinates;
 showCoordinates();
-let vocalMode = true;
-startRec();
-
-function toggleVocalMode() {
-    const image = document.getElementById('toggle-vocal-button-image');
-    if (vocalMode) {
-        vocalMode = false;
-        document.getElementById("toggle-vocal-button").classList.remove("vocal-active");
-        image.src = "/public/assets/mic-off.svg";
-        image.alt = "🔇";
-    } else {
-        vocalMode = true;
-        image.src = "/public/assets/mic-on.svg";
-        document.getElementById("toggle-vocal-button").classList.add("vocal-active");
-        image.alt = "🎙️";   
-        startRec();
-    }
-
-}
-
-async function startRec() {
-    vocalMode = true;
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const audioCtx = new AudioContext({ sampleRate: 16000 });
-        const source = audioCtx.createMediaStreamSource(stream);
-        const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-        source.connect(processor);
-        processor.connect(audioCtx.destination);
-        processor.onaudioprocess = (e) => {
-            if (!vocalMode) {
-                processor.onaudioprocess = (e) => {};
-                return;
-            }
-            const input = e.inputBuffer.getChannelData(0);
-            const pcm16 = new Int16Array(input.length);
-            for (let i = 0; i < input.length; i++) {
-                const s = Math.max(-1, Math.min(1, input[i]));
-                pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-            }
-            socket?.emit("audio", pcm16.buffer);
-        };
-    } catch (e) {
-        vocalMode = false;
-        document.getElementById("toggle-vocal-button").classList.add("hidden");
-    }
-}
+// Micro et commandes vocales : voir /public/voice/voice-parachess-play.js
 
 const authorized = 'abcdefgh12345678nqrb';
 const typed = [];

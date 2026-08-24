@@ -42,10 +42,13 @@ const puissance4Homophones = {
     "colonne" : ["colonnes", "colonne", 'cologne']
 };
 
-const vocMenu = ["menu", "retour", "quitter", "revenir", "accueil", "principal", "crédits", "qui", "sommes", "nous","règle"];
+const vocMenu = ["menu", "retour", "quitter", "revenir", "accueil",
+    "crédits", "qui", "sommes", "nous", "règle", "règles", "aide", "mentions", "légales",
+    "échecs", "puissance", "coordonnées", "caméra",
+    "activer", "désactiver", "créer", "automatiquement", "partie"];
 const vocPuissance4 = ["colonne"];
 const pieces = ["tour", "cavalier", "fou", "dame", "pion", "roi"];
-const ordre = ["abandon", "réinitialiser", "non", "annuler"];
+const ordre = ["abandonner", "recommencer", "rejouer", "non", "annuler"];
 const ignore = ["échec", "mat", "petit roque", "grand roque", "échec et mat", "roque", "petit", "grand", "pat"];
 
 const reverseMap = {};
@@ -133,6 +136,33 @@ export function transform(text) {
         .map(w => reverseMap[w] || w)
         .filter(w => validWords.has(w))
         .join(" ");
+}
+
+export function detectMenuCommand(text) {
+    const words = text.split(" ");
+
+    if (words.includes("crédits")) return "credits";
+    if (words.includes("mentions") || words.includes("légales")) return "legal";
+    if (words.includes("qui")) return "about";
+    if (words.includes("échecs") || words.includes("échec")) return "parachess";
+    if (words.includes("puissance")) return "disconnect4";
+    if (words.includes("caméra")) {
+        if (words.includes("désactiver")) return "visage-off";
+        if (words.includes("activer")) return "visage-on";
+    }
+    if (words.includes("coordonnées")) {
+        if (words.includes("désactiver")) return "coordonnees-off";
+        if (words.includes("activer")) return "coordonnees-on";
+    }
+    if (words.includes("créer") && (words.includes("automatiquement") || words.includes("partie"))) return "creer-partie";
+    if (words.includes("aide")) return "aide";
+    if (words.includes("règle") || words.includes("règles")) return "regles";
+    if (words.includes("quitter")) return "quitter";
+    if (words.includes("accueil")) return "accueil";
+    if (words.includes("revenir")) return "revenir";
+    if (words.includes("retour") || words.includes("menu")) return "retour";
+
+    return null;
 }
 
 // startListening((text, address) => {

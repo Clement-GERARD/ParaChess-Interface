@@ -1,5 +1,5 @@
 import Connect4 from '../games/disconnect4/connect4.js';
-import { recPuissance4, transform, grammarPuissance4 } from '../receive-audio.js';
+import { recPuissance4, transform, grammarPuissance4, detectMenuCommand } from '../voice-recognition.js';
 
 function fromTextToMove(nsp, text, address) {
     const ip = extractIP(address);
@@ -10,6 +10,26 @@ function fromTextToMove(nsp, text, address) {
 
     const game = disconnect4Games[id];
     const lowerCaseText = text.toLowerCase();
+
+    const menuCommand = detectMenuCommand(lowerCaseText);
+    if (menuCommand) {
+        nsp.to('game:' + id).emit('voice-command', menuCommand);
+        return;
+    }
+
+    if (lowerCaseText.includes('abandonner')) {
+        game.resign(game.getPlayer(ip));
+        nsp.to('game:' + id).emit('state', game.getState());
+        return;
+    }
+
+    if (lowerCaseText.includes('recommencer') || lowerCaseText.includes('rejouer')) {
+        disconnect4Games[id] = new Connect4(game.getInvertedUser());
+        nsp.to('game:' + id).emit('boardStates', disconnect4Games[id].getPositions());
+        nsp.to('game:' + id).emit('legalColumns', disconnect4Games[id].getLegalColumns());
+        nsp.to('game:' + id).emit('state', disconnect4Games[id].getState());
+        return;
+    }
 
     if (lowerCaseText.includes('non') || lowerCaseText.includes('annuler')) return;
 

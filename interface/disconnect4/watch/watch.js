@@ -1,5 +1,3 @@
-// source pour règles : https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/connect-four
-
 window.connection = connection;
 let socket = null;
 

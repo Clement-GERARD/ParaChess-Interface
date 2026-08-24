@@ -1,11 +1,4 @@
-/* --- CONFIGURATION GENERALE --- */
 :root {
-    /* 
-       Cette ligne magique (clamp) calcule la taille d'une case.
-       Elle dit : "Fais 10vw (10% de la largeur), mais ne dépasse jamais 7vh (7% de la hauteur) 
-       pour ne pas déborder en hauteur, avec un maximum absolu de 80px".
-    Length de référence automatique pour le jeu.
-    */
     --size-case: clamp(40px, min(13vw, 9vh), 100px);
 }
 
@@ -13,14 +6,14 @@ body {
     margin: 0;
     height: 100vh;
     display: flex;
-    flex-direction: column;    /* Empile les boutons au-dessus du jeu */
-    justify-content: center;   /* Centre verticalement */
-    align-items: center;       /* Centre horizontalement */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     font-family: sans-serif;
-    gap: calc(var(--size-case) * 0.2); /* L'espace s'adapte aussi ! */
+    gap: calc(var(--size-case) * 0.2);
     padding: 10px;
     box-sizing: border-box;
-    overflow: hidden;          /* Empêche l'apparition de barres de défilement */
+    overflow: hidden;
 }
 
 #div-button, #div-tab {
@@ -29,18 +22,15 @@ body {
     width: 100%;
 }
 
-/* --- STRUCTURE DES TABLEAUX --- */
 #buttons-table, #connect4-table {
     border-collapse: separate;
-    /* L'espace entre les cases devient proportionnel à la taille des cases */
     border-spacing: calc(var(--size-case) * 0.12); 
     box-sizing: border-box;
 }
 
-/* --- GRILLE DE BOUTONS (En haut) --- */
 #buttons-table td {
-    width: var(--size-case);   /* S'adapte dynamiquement */
-    height: calc(var(--size-case) * 0.5); /* Moitié moins haut qu'une case */
+    width: var(--size-case);
+    height: calc(var(--size-case) * 0.5);
     padding: 0;
 }
 
@@ -49,9 +39,9 @@ body {
     height: 100%;
     color: white;
     border: none;
-    border-radius: calc(var(--size-case) * 0.1); /* Arrondi fluide */
+    border-radius: calc(var(--size-case) * 0.1);
     font-weight: bold;
-    font-size: calc(var(--size-case) * 0.3); /* Le texte s'adapte pour ne pas déborder */
+    font-size: calc(var(--size-case) * 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -72,7 +62,6 @@ body {
     transform: scale(1.05);
 }
 
-/* --- GRILLE DE JEU (En bas) --- */
 #connect4-table {
     background-color: #2c3e50;
     border-radius: calc(var(--size-case) * 0.15);
@@ -81,10 +70,10 @@ body {
 }
 
 #connect4-table td {
-    width: var(--size-case);  /* Devient plus petit sur petit écran, grand sur grand écran */
-    height: var(--size-case); /* Reste parfaitement carré */
+    width: var(--size-case);
+    height: var(--size-case);
     background-color: #111;
-    border-radius: 50%;       /* Trous toujours parfaitement ronds */
+    border-radius: 50%;
     padding: 0;
 }
 
