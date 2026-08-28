@@ -8,6 +8,8 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import { recChess, transform, grammarChess, detectMenuCommand } from './voice-recognition.js';
+import parachessNamespace from './namespaces/parachess.js';
+import disconnect4Namespace from './namespaces/disconnect4.js';
 
 const app = express();
 app.set('trust proxy', true);
@@ -16,6 +18,9 @@ app.use('/public', express.static(path.join(process.cwd(), 'interface')));
 const server = http.createServer(app);
 const io = new Server(server);
 const port = process.env.PORT || 5000;
+
+const parachessNSP = parachessNamespace(io);
+const disconnect4NSP = disconnect4Namespace(io);
 
 app.use((req, res, next) => {
     const date = new Date();
