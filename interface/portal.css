@@ -38,14 +38,27 @@ body {
 }
 
 .portal-header {
-    text-align: center;
-    margin-bottom: 3.5rem;
     animation: fadeInDown 0.8s ease-out;
 }
+
+.portal-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+    text-align: left; /* le texte s'aligne à gauche à côté du logo */
+}
+
+.portal-header-text {
+    display: flex;
+    flex-direction: column;
+}
+
 .portal-header h1 {
     font-size: 3rem;
     font-weight: 800;
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.25rem 0;
     background: linear-gradient(to right, #d4a373, #e9c46a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -54,6 +67,17 @@ body {
 .portal-header p {
     font-size: 1.2rem;
     color: #c4b5a0;
+    margin: 0;
+}
+
+.portal-header img {
+    width: 200px;
+    height: auto;
+}
+
+.logo-link {
+    display: flex;
+    line-height: 0;
 }
 
 .game-card.parachess {
