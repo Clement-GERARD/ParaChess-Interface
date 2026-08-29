@@ -100,7 +100,7 @@ window.addEventListener('keydown', e => {
 
 function displaySideColor(couleur) {
     annonceCouleur = document.getElementById("side");
-    annonceCouleur.innerText = "Trait au " + dictCouleurs[couleur] + ' ' + dictCouleursEmojis[couleur] + ".";
+    annonceCouleur.innerText = "Tour au " + dictCouleurs[couleur] + ' ' + dictCouleursEmojis[couleur] + ".";
 }
 
 const zoneBoutons = document.getElementById('div-button');
