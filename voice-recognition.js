@@ -1,19 +1,64 @@
 import dgram from 'dgram';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const vosk = require('vosk');
 
 const server = dgram.createSocket('udp4');
 
+const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.');
 const PORT = 5001;
 const HOST = '127.0.0.1';
-const MODEL_PATH = "model-fr";
+const MODEL_PATH = path.resolve(PROJECT_ROOT, 'model-fr');
 const SAMPLE_RATE = 16000;
 
-if(!fs.existsSync(MODEL_PATH)) {
-    console.error(`Erreur : Le dossier '${MODEL_PATH}' est introuvable.`);
-    process.exit(1);
+export function validateStartupCommand() {
+    const currentDir = path.resolve(process.cwd());
+    const isProjectRoot = currentDir === PROJECT_ROOT;
+
+    if (!isProjectRoot) {
+        console.warn(`[Startup] Le projet a été lancé depuis "${currentDir}" au lieu de "${PROJECT_ROOT}". Pour démarrer correctement : cd "${PROJECT_ROOT}" && node ./index.js`);
+    }
+
+    return isProjectRoot;
+}
+
+export function validateModelDirectory() {
+    const requiredFiles = [
+        'conf/model.conf',
+        'graph/phones/word_boundary.int',
+        'ivector/final.mat'
+    ];
+
+    if (!fs.existsSync(MODEL_PATH)) {
+        throw new Error(`[Voice] Le dossier du modèle Vosk est introuvable. Attendu : "${MODEL_PATH}". Pour démarrer correctement : cd "${PROJECT_ROOT}" && node ./index.js`);
+    }
+
+    const missingFiles = requiredFiles.filter(relativePath => {
+        const fullPath = path.join(MODEL_PATH, relativePath);
+        return !fs.existsSync(fullPath);
+    });
+
+    if (missingFiles.length > 0) {
+        const missingList = missingFiles.map(file => `"${path.join(MODEL_PATH, file)}"`).join(', ');
+        throw new Error(`[Voice] Les fichiers du modèle Vosk sont incomplets. Fichiers manquants : ${missingList}. Vérifiez que le dossier "model-fr/" est bien présent à la racine du projet.`);
+    }
+
+    return {
+        projectRoot: PROJECT_ROOT,
+        modelPath: MODEL_PATH,
+        requiredFiles,
+        currentDirectory: process.cwd()
+    };
+}
+
+export function validateVoiceEnvironment() {
+    validateStartupCommand();
+    const metadata = validateModelDirectory();
+    console.log(`[Voice] Modèle Vosk validé : ${metadata.modelPath}`);
+    return metadata;
 }
 
 const alphabetHomophones = {
@@ -103,12 +148,19 @@ export { grammarChess, grammarPuissance4 };
 
 console.log("[✱] Chargement du modèle Vosk");
 
-vosk.setLogLevel(-1)
-const model = new vosk.Model(MODEL_PATH);
-export const recChess = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarChess });
-export const recPuissance4 = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarPuissance4 });
+let model = null;
+export let recChess = null;
+export let recPuissance4 = null;
 
-console.log("[✱] Modèle Vosk chargé");
+try {
+    validateVoiceEnvironment();
+    model = new vosk.Model(MODEL_PATH);
+    recChess = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarChess });
+    recPuissance4 = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE, grammar: grammarPuissance4 });
+    console.log("[✱] Modèle Vosk chargé");
+} catch (error) {
+    console.error(`[Voice] Impossible de démarrer la reconnaissance vocale : ${error.message}`);
+}
 
 export function normalizeSpeech(text) {
     if (typeof text !== 'string') return '';
@@ -158,8 +210,13 @@ export function processAudioBuffer(recognizer, buffer) {
 
 export function startListening(callback, recognizer = recChess) {
     server.on('error', err => {
-        console.log(`[X] Erreur lors de l'écoute :\n${err.stack}`);
-        server.close();
+        if (err && err.code === 'EADDRINUSE') {
+            console.error(`[Voice] Le port UDP ${PORT} est déjà utilisé. Vérifiez qu'aucune autre instance n'écoute le flux audio.`);
+        } else {
+            console.error(`[Voice] Erreur lors de l'écoute du flux audio : ${err && err.message ? err.message : err}`);
+        }
+        process.exitCode = 1;
+        return;
     });
 
     server.on('message', (msg, rinfo) => {
