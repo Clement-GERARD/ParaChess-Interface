@@ -156,6 +156,55 @@ Vous pouvez ensuite ouvrir dans votre navigateur :
 http://localhost:5000
 ```
 
+## 🔧 Prérequis runtime du serveur
+
+Le projet dépend de deux éléments externes présents à la racine du dépôt :
+
+- `model-fr/` pour la reconnaissance vocale Vosk
+- `.stockfish/` pour le moteur d'analyse d'échecs Stockfish
+
+### Modèle Vosk
+
+Le dossier `model-fr/` doit être présent et complet. S'il manque, le démarrage affiche un message explicite indiquant le chemin attendu et la commande recommandée.
+
+Commande recommandée :
+
+```bash
+cd C:\chemin\vers\ParaChess-Interface
+node ./index.js
+```
+
+### Stockfish
+
+Le binaire Stockfish est attendu dans :
+
+- Windows : `.stockfish/stockfish.exe`
+- Linux/macOS : `.stockfish/stockfish`
+
+Le projet accepte aussi un override explicite via la variable d'environnement :
+
+```powershell
+$env:STOCKFISH_PATH="C:\chemin\vers\stockfish.exe"
+node ./index.js
+```
+
+Le script d'installation permet de télécharger et valider le moteur :
+
+```bash
+node ./scripts/install-stockfish.js
+```
+
+Si Stockfish est absent, le moteur bascule automatiquement en mode dégradé et la partie reste jouable sans analyse de position.
+
+### Ports utilisés
+
+Le projet écoute :
+
+- HTTP / Socket.IO : port `5000`
+- flux audio UDP : port `5001`
+
+Si l'un de ces ports est déjà utilisé, le démarrage affiche un message clair au lieu d'échouer silencieusement.
+
 ---
 
 # 🖥️ Comment fonctionne le serveur ?
