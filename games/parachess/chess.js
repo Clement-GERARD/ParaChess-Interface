@@ -7,12 +7,18 @@ import Board from "./board.js";
 import { Bishop, Pawn, Queen, King, Knight, Rook } from './piece.js';
 import Actions from './actions.js';
 import { spawn } from 'child_process';
+import path from 'path';
 
 /**
  * piece allowed during promotions
  */
 const PROMOTIONS_PIECES = ["n", "N", "b", "B", "r", "R", "q", "Q"];
 export const PROMOTIONS_PIECES_NAME = ["tour", "cavalier", "fou", "dame"];
+const STOCKFISH_PATH = process.env.STOCKFISH_PATH || path.join(
+    process.cwd(),
+    '.stockfish',
+    process.platform === 'win32' ? 'stockfish.exe' : 'stockfish'
+);
 
 /**
  * The Chess class allows manipulation of the chessboard
@@ -72,9 +78,16 @@ export class Chess {
         this.players = players;
         this.eval = this.evalPosition();
         this.onEval = onEval;
-        this.engine = spawn("stockfish");
+        this.engine = null;
         this.lastEval = null;
         this.lastMoveTime = Date.now();
+        if (process.env.STOCKFISH !== "NO") {
+            this.engine = spawn(STOCKFISH_PATH);
+            this.engine.on('error', error => {
+                console.error(`[Stockfish] Impossible de lancer le moteur depuis ${STOCKFISH_PATH}: ${error.message}`);
+            });
+        }
+        if (!this.engine) return;
         this.engine.stdout.on("data", (data) => {
 
             const text = data.toString();
@@ -880,6 +893,7 @@ export class Chess {
      * close Stockfish
      */
     clear() {
+        if (!this.engine) return;
         this.engine.stdin.write('stop\n');
         this.engine.stdin.write('quit\n');
     }

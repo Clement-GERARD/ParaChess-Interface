@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
-  "scripts": {},
+  "scripts": {
+    "postinstall": "node scripts/install-stockfish.js"
+  },
   "dependencies": {
     "express": "^5.2.1",
     "socket.io": "^4.8.3",

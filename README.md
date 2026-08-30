@@ -18,6 +18,7 @@ Le projet original repose sur une architecture Node.js comprenant notamment :
 * **Vosk** pour certaines fonctionnalités de reconnaissance vocale
 * HTML / CSS / JavaScript pour l'interface utilisateur
 
+<<<<<<< Updated upstream
 Le dépôt contient à la fois :
 
 1. une **interface web statique** dans le dossier `interface/` ;
@@ -116,6 +117,9 @@ Depuis la racine du projet :
 ```bash
 npm install --ignore-scripts
 ```
+=======
+npm install
+>>>>>>> Stashed changes
 
 Cette commande installe les dépendances définies dans `package.json`.
 
