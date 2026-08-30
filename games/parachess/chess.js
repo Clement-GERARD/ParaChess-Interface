@@ -6,7 +6,8 @@
 import Board from "./board.js";
 import { Bishop, Pawn, Queen, King, Knight, Rook } from './piece.js';
 import Actions from './actions.js';
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
+import fs from 'fs';
 import path from 'path';
 
 /**
@@ -14,11 +15,78 @@ import path from 'path';
  */
 const PROMOTIONS_PIECES = ["n", "N", "b", "B", "r", "R", "q", "Q"];
 export const PROMOTIONS_PIECES_NAME = ["tour", "cavalier", "fou", "dame"];
-const STOCKFISH_PATH = process.env.STOCKFISH_PATH || path.join(
-    process.cwd(),
-    '.stockfish',
-    process.platform === 'win32' ? 'stockfish.exe' : 'stockfish'
-);
+
+export function resolveStockfishPath(customPath = process.env.STOCKFISH_PATH) {
+    const candidate = customPath && customPath.trim() ? customPath.trim() : path.join(
+        process.cwd(),
+        '.stockfish',
+        process.platform === 'win32' ? 'stockfish.exe' : 'stockfish'
+    );
+
+    if (process.platform === 'win32' && !path.extname(candidate)) {
+        return `${candidate}.exe`;
+    }
+
+    return candidate;
+}
+
+export function getStockfishStatus(customPath = process.env.STOCKFISH_PATH) {
+    const resolvedPath = resolveStockfishPath(customPath);
+
+    if (process.env.STOCKFISH === 'NO') {
+        return {
+            available: false,
+            disabled: true,
+            path: resolvedPath,
+            reason: 'La variable STOCKFISH=NO désactive explicitement le moteur d’évaluation.'
+        };
+    }
+
+    if (!fs.existsSync(resolvedPath)) {
+        return {
+            available: false,
+            disabled: false,
+            path: resolvedPath,
+            reason: `Le binaire Stockfish est introuvable à l'emplacement attendu : ${resolvedPath}`
+        };
+    }
+
+    const probe = spawnSync(resolvedPath, ['--help'], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 4000
+    });
+
+    if (probe.error) {
+        return {
+            available: false,
+            disabled: false,
+            path: resolvedPath,
+            reason: `Le binaire existe mais ne peut pas être lancé : ${probe.error.message}`
+        };
+    }
+
+    const output = `${probe.stdout ?? ''}\n${probe.stderr ?? ''}`.toLowerCase();
+    const respondsLikeStockfish = output.includes('stockfish') || output.includes('uci');
+
+    if (!respondsLikeStockfish) {
+        return {
+            available: false,
+            disabled: false,
+            path: resolvedPath,
+            reason: 'Le fichier existe mais ne répond pas comme un binaire Stockfish valide.'
+        };
+    }
+
+    return {
+        available: true,
+        disabled: false,
+        path: resolvedPath,
+        reason: 'Stockfish détecté et répond correctement.'
+    };
+}
+
+export const STOCKFISH_PATH = resolveStockfishPath();
 
 /**
  * The Chess class allows manipulation of the chessboard
@@ -81,13 +149,38 @@ export class Chess {
         this.engine = null;
         this.lastEval = null;
         this.lastMoveTime = Date.now();
-        if (process.env.STOCKFISH !== "NO") {
-            this.engine = spawn(STOCKFISH_PATH);
-            this.engine.on('error', error => {
-                console.error(`[Stockfish] Impossible de lancer le moteur depuis ${STOCKFISH_PATH}: ${error.message}`);
-            });
+        this.stockfishStatus = getStockfishStatus();
+
+        if (this.stockfishStatus.available) {
+            try {
+                this.engine = spawn(this.stockfishStatus.path, ['uci'], { windowsHide: true });
+                this.engine.on('error', error => {
+                    console.error(`[Stockfish] Impossible de lancer le moteur depuis ${this.stockfishStatus.path}: ${error.message}`);
+                    this.engine = null;
+                    this.stockfishStatus = {
+                        ...this.stockfishStatus,
+                        available: false,
+                        reason: `Lancement du moteur impossible : ${error.message}`
+                    };
+                });
+            } catch (error) {
+                console.error(`[Stockfish] Échec du démarrage du moteur : ${error.message}`);
+                this.engine = null;
+                this.stockfishStatus = {
+                    ...this.stockfishStatus,
+                    available: false,
+                    reason: `Échec du démarrage du moteur : ${error.message}`
+                };
+            }
+        } else {
+            console.warn(`[Stockfish] Analyse désactivée : ${this.stockfishStatus.reason}`);
         }
-        if (!this.engine) return;
+
+        if (!this.engine) {
+            this.eval = Chess.DEFAULT_EVAL;
+            return;
+        }
+
         this.engine.stdout.on("data", (data) => {
 
             const text = data.toString();
@@ -229,8 +322,10 @@ export class Chess {
         const fen = this.board.toFen();
         this.fenPiecesHistory.push(fen);
         this.lastMoveTime = Date.now();
-        this.engine?.stdin.write('stop\n');
-        this.engine?.stdin.write('move ' + from + to + "\n");
+        if (this.engine?.stdin) {
+            this.engine.stdin.write('stop\n');
+            this.engine.stdin.write('move ' + from + to + "\n");
+        }
         this.evalPosition();
         this.positions.push(this.board.export());
         return true;
@@ -870,8 +965,10 @@ export class Chess {
      * evaluate the game
      */
     evalPosition() {
-        if(process.env.STOCKFISH === "NO") return;
-        this.engine?.stdin.write("go depth 35\n");
+        if (process.env.STOCKFISH === "NO") return;
+        if (!this.engine || !this.engine.stdin) return;
+        if (!this.stockfishStatus?.available) return;
+        this.engine.stdin.write("go depth 35\n");
     }
 
     /**
@@ -893,7 +990,7 @@ export class Chess {
      * close Stockfish
      */
     clear() {
-        if (!this.engine) return;
+        if (!this.engine || !this.engine.stdin) return;
         this.engine.stdin.write('stop\n');
         this.engine.stdin.write('quit\n');
     }
