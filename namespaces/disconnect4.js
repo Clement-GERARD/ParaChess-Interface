@@ -1,5 +1,5 @@
 import Connect4 from '../games/disconnect4/connect4.js';
-import { recPuissance4, transform, grammarPuissance4, detectMenuCommand } from '../voice-recognition.js';
+import { recPuissance4, processAudioBuffer, detectMenuCommand } from '../voice-recognition.js';
 
 function fromTextToMove(nsp, text, address) {
     const ip = extractIP(address);
@@ -140,16 +140,13 @@ export default function disconnect4Namespace(io) {
         socket.on('audio', async function (buffer) {
             if (!disconnect4Games[id].isPlayer(ip))
                 return;
-            const audioBuffer = Buffer.isBuffer(buffer)
-                ? buffer
-                : Buffer.from(buffer);
-            const uint8 = new Uint8Array(audioBuffer);
-            if (recPuissance4.acceptWaveform(uint8)) {
-                const result = recPuissance4.result();
-                if (result?.text) {
-                    fromTextToMove(nsp, transform(result.text, grammarPuissance4), ip);
-                }
+
+            const normalizedText = processAudioBuffer(recPuissance4, buffer);
+            if (!normalizedText) {
+                return;
             }
+
+            fromTextToMove(nsp, normalizedText, ip);
         });
     });
 

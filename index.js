@@ -7,7 +7,7 @@ import disconnect4 from './routes/disconnect4.js'
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { recChess, transform, grammarChess, detectMenuCommand } from './voice-recognition.js';
+import { recChess, processAudioBuffer, detectMenuCommand } from './voice-recognition.js';
 import parachessNamespace from './namespaces/parachess.js';
 import disconnect4Namespace from './namespaces/disconnect4.js';
 
@@ -34,17 +34,14 @@ io.on('connection', socket => {
     });
 
     socket.on('audio', buffer => {
-        const audioBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
-        const uint8 = new Uint8Array(audioBuffer);
-        if (recChess.acceptWaveform(uint8)) {
-            const result = recChess.result();
-            if (result?.text) {
-                const cleaned = transform(result.text, grammarChess);
-                const menuCommand = detectMenuCommand(cleaned.toLowerCase());
-                if (menuCommand) {
-                    socket.emit('voice-command', menuCommand);
-                }
-            }
+        const cleaned = processAudioBuffer(recChess, buffer);
+        if (!cleaned) {
+            return;
+        }
+
+        const menuCommand = detectMenuCommand(cleaned);
+        if (menuCommand) {
+            socket.emit('voice-command', menuCommand);
         }
     });
 });

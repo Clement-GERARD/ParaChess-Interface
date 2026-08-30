@@ -51,10 +51,24 @@ const pieces = ["tour", "cavalier", "fou", "dame", "pion", "roi"];
 const ordre = ["abandonner", "recommencer", "rejouer", "non", "annuler"];
 const ignore = ["échec", "mat", "petit roque", "grand roque", "échec et mat", "roque", "petit", "grand", "pat"];
 
-const reverseMap = {};
-Object.entries(alphabetHomophones).forEach(([letter, syns]) => syns.forEach(s => reverseMap[s] = letter));
-Object.entries(chiffresHomophones).forEach(([digit, syns]) => syns.forEach(s => reverseMap[s] = digit));
-Object.entries(puissance4Homophones).forEach(([word, syns]) => syns.forEach(s => reverseMap[s] = word));
+const normalizeSpeechToken = (token = '') => token
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\'’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+const aliasMap = new Map();
+const registerAlias = (alias, value) => {
+    const key = normalizeSpeechToken(alias);
+    if (!key) return;
+    aliasMap.set(key, value);
+};
+
+Object.entries(alphabetHomophones).forEach(([letter, syns]) => syns.forEach(s => registerAlias(s, letter)));
+Object.entries(chiffresHomophones).forEach(([digit, syns]) => syns.forEach(s => registerAlias(s, digit)));
+Object.entries(puissance4Homophones).forEach(([word, syns]) => syns.forEach(s => registerAlias(s, word)));
 
 const grammarChess = [...pieces, ...ordre, ...ignore, ...vocMenu];
 
@@ -96,7 +110,53 @@ export const recPuissance4 = new vosk.Recognizer({ model, sampleRate: SAMPLE_RAT
 
 console.log("[✱] Modèle Vosk chargé");
 
-export function startListening(callback) {
+export function normalizeSpeech(text) {
+    if (typeof text !== 'string') return '';
+    const normalized = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\'’]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+
+    if (!normalized) return '';
+    return normalized
+        .split(/\s+/)
+        .map(token => aliasMap.get(token) ?? token)
+        .filter(Boolean)
+        .join(' ');
+}
+
+export function processAudioBuffer(recognizer, buffer) {
+    if (!recognizer || typeof recognizer.acceptWaveform !== 'function') {
+        return null;
+    }
+
+    let waveform;
+    if (buffer instanceof Uint8Array) {
+        waveform = buffer;
+    } else if (ArrayBuffer.isView(buffer)) {
+        waveform = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    } else if (Buffer.isBuffer(buffer)) {
+        waveform = new Uint8Array(buffer);
+    } else {
+        waveform = new Uint8Array(Buffer.from(buffer));
+    }
+
+    if (!recognizer.acceptWaveform(waveform)) {
+        return null;
+    }
+
+    const result = recognizer.result();
+    if (!result?.text) {
+        return null;
+    }
+
+    return normalizeSpeech(result.text);
+}
+
+export function startListening(callback, recognizer = recChess) {
     server.on('error', err => {
         console.log(`[X] Erreur lors de l'écoute :\n${err.stack}`);
         server.close();
@@ -104,14 +164,12 @@ export function startListening(callback) {
 
     server.on('message', (msg, rinfo) => {
         const audioPayload = msg.slice(12);
-        if (rec.acceptWaveform(audioPayload)) {
-            const rawText = rec.result().text;
-            const cleanedText = transform(rawText);
-            // console.log(`[🎙️ Brut]    : "${rawText}"`);
-            // console.log(`[⚡ Nettoyé] : "${cleanedText}"`);
-            // console.log('------------------------------------');
-            callback(cleanedText, rinfo.address);
+        const cleanedText = processAudioBuffer(recognizer, audioPayload);
+        if (cleanedText === null) {
+            return;
         }
+
+        callback(cleanedText, rinfo.address);
     });
 
     server.on('listening', () => {
@@ -123,44 +181,32 @@ export function startListening(callback) {
 };
 
 export function transform(text) {
-    const validWords = new Set([
-        ...Object.values(reverseMap),
-        ...pieces,
-        ...ordre,
-        ...ignore,
-        ...vocMenu
-    ]);
-
-    return text
-        .split(" ")
-        .map(w => reverseMap[w] || w)
-        .filter(w => validWords.has(w))
-        .join(" ");
+    return normalizeSpeech(text);
 }
 
 export function detectMenuCommand(text) {
-    const words = text.split(" ");
+    const words = normalizeSpeech(text).split(/\s+/).filter(Boolean);
 
-    if (words.includes("crédits")) return "credits";
-    if (words.includes("mentions") || words.includes("légales")) return "legal";
-    if (words.includes("qui")) return "about";
-    if (words.includes("échecs") || words.includes("échec")) return "parachess";
-    if (words.includes("puissance")) return "disconnect4";
-    if (words.includes("caméra")) {
-        if (words.includes("désactiver")) return "visage-off";
-        if (words.includes("activer")) return "visage-on";
+    if (words.includes('credits')) return 'credits';
+    if (words.includes('mentions') || words.includes('legales')) return 'legal';
+    if (words.includes('qui')) return 'about';
+    if (words.includes('echec') || words.includes('echecs')) return 'parachess';
+    if (words.includes('puissance')) return 'disconnect4';
+    if (words.includes('camera')) {
+        if (words.includes('desactiver')) return 'visage-off';
+        if (words.includes('activer')) return 'visage-on';
     }
-    if (words.includes("coordonnées")) {
-        if (words.includes("désactiver")) return "coordonnees-off";
-        if (words.includes("activer")) return "coordonnees-on";
+    if (words.includes('coordonnees')) {
+        if (words.includes('desactiver')) return 'coordonnees-off';
+        if (words.includes('activer')) return 'coordonnees-on';
     }
-    if (words.includes("créer") && (words.includes("automatiquement") || words.includes("partie"))) return "creer-partie";
-    if (words.includes("aide")) return "aide";
-    if (words.includes("règle") || words.includes("règles")) return "regles";
-    if (words.includes("quitter")) return "quitter";
-    if (words.includes("accueil")) return "accueil";
-    if (words.includes("revenir")) return "revenir";
-    if (words.includes("retour") || words.includes("menu")) return "retour";
+    if (words.includes('creer') && (words.includes('automatiquement') || words.includes('partie'))) return 'creer-partie';
+    if (words.includes('aide')) return 'aide';
+    if (words.includes('regle') || words.includes('regles')) return 'regles';
+    if (words.includes('quitter')) return 'quitter';
+    if (words.includes('accueil')) return 'accueil';
+    if (words.includes('revenir')) return 'revenir';
+    if (words.includes('retour') || words.includes('menu')) return 'retour';
 
     return null;
 }

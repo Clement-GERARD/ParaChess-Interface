@@ -1,5 +1,5 @@
 import { Chess, PROMOTIONS_PIECES_NAME } from '../games/parachess/chess.js';
-import { recChess, transform, grammarChess, startListening, detectMenuCommand } from '../voice-recognition.js';
+import { recChess, processAudioBuffer, startListening, detectMenuCommand } from '../voice-recognition.js';
 
 function createSendEval(io, gameId) {
     return function (payload) {
@@ -88,7 +88,7 @@ export default function parachessNamespace(io) {
     ioRef = io;
     const nsp = io.of('/parachess');
 
-    startListening(fromTextToMove);
+    startListening(fromTextToMove, recChess);
 
     nsp.on('connection', socket => {
         const { id } = socket.handshake.query;
@@ -192,16 +192,13 @@ export default function parachessNamespace(io) {
         socket.on('audio', async function (buffer) {
             if (!parachessGames[id].isPlayer(ip))
                 return;
-            const audioBuffer = Buffer.isBuffer(buffer)
-                ? buffer
-                : Buffer.from(buffer);
-            const uint8 = new Uint8Array(audioBuffer);
-            if (recChess.acceptWaveform(uint8)) {
-                const result = recChess.result();
-                if (result?.text) {
-                    fromTextToMove(nsp, transform(result.text, grammarChess), ip);
-                }
+
+            const normalizedText = processAudioBuffer(recChess, buffer);
+            if (!normalizedText) {
+                return;
             }
+
+            fromTextToMove(nsp, normalizedText, ip);
         });
     });
 
