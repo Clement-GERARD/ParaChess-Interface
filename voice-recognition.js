@@ -164,7 +164,3 @@ export function detectMenuCommand(text) {
 
     return null;
 }
-
-// startListening((text, address) => {
-//     console.log(`[🎯 Résultat final] : "${text}" (depuis ${address})`);
-// });

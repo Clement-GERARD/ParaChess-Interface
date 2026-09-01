@@ -7,7 +7,7 @@ import disconnect4 from './routes/disconnect4.js'
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { recChess, transform, grammarChess, detectMenuCommand } from './voice-recognition.js';
+import { VoicePool } from './worker-pool.js';
 import parachessNamespace from './namespaces/parachess.js';
 import disconnect4Namespace from './namespaces/disconnect4.js';
 
@@ -28,25 +28,29 @@ app.use((req, res, next) => {
     next();
 });
 
+
+const voicePool = new VoicePool(); // demarre le(s) worker(s) au lancement du serveur
+ 
 io.on('connection', socket => {
     socket.on('alive', status => {
         socket.emit('alive_conn', 1)
     });
-
+ 
     socket.on('audio', buffer => {
-        const audioBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
-        const uint8 = new Uint8Array(audioBuffer);
-        if (recChess.acceptWaveform(uint8)) {
-            const result = recChess.result();
-            if (result?.text) {
-                const cleaned = transform(result.text, grammarChess);
-                const menuCommand = detectMenuCommand(cleaned.toLowerCase());
-                if (menuCommand) {
-                    socket.emit('voice-command', menuCommand);
-                }
-            }
-        }
+        // Ne bloque plus le thread principal : part dans le worker pool
+        voicePool.sendAudio(socket.id, buffer, 'chess');
     });
+ 
+    socket.on('disconnect', () => {
+        voicePool.removeConnection(socket.id);
+    });
+});
+ 
+// Le worker pool emet un evenement des qu'une commande vocale est detectee.
+// Il faut retrouver le bon socket par son id pour lui repondre.
+voicePool.on('voice-command', (socketId, command) => {
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket) socket.emit('voice-command', command);
 });
 
 app.use('/api', api());
