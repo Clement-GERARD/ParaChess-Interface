@@ -1,5 +1,6 @@
 import api from './routes/api.js';
 import path from 'path';
+import os from 'os';
 import home from './routes/home.js';
 import games from './routes/games.js';
 import parachess from './routes/parachess.js'
@@ -12,7 +13,27 @@ import parachessNamespace from './namespaces/parachess.js';
 import disconnect4Namespace from './namespaces/disconnect4.js';
 
 const app = express();
+const host = process.env.HOST || '0.0.0.0';
+const port = Number(process.env.PORT || 5000);
+
 app.set('trust proxy', true);
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
+
+function getLocalAddresses() {
+    return Object.values(os.networkInterfaces())
+        .flat()
+        .filter(details => details && details.family === 'IPv4' && !details.internal)
+        .map(details => details.address);
+}
 
 try {
     validateVoiceEnvironment();
@@ -25,7 +46,6 @@ app.use('/public', express.static(path.join(process.cwd(), 'interface')));
 
 const server = http.createServer(app);
 const io = new Server(server);
-const port = Number(process.env.PORT || 5000);
 
 const parachessNSP = parachessNamespace(io);
 const disconnect4NSP = disconnect4Namespace(io);
@@ -37,6 +57,8 @@ app.use((req, res, next) => {
 });
 
 io.on('connection', socket => {
+    console.log(`[Socket] Nouvelle connexion: ${socket.id} | IP: ${socket.handshake.address}`);
+
     socket.on('alive', status => {
         socket.emit('alive_conn', 1)
     });
@@ -51,6 +73,10 @@ io.on('connection', socket => {
         if (menuCommand) {
             socket.emit('voice-command', menuCommand);
         }
+    });
+
+    socket.on('disconnect', reason => {
+        console.log(`[Socket] Déconnexion: ${socket.id} | raison: ${reason}`);
     });
 });
 
@@ -75,6 +101,9 @@ server.on('error', error => {
     process.exitCode = 1;
 });
 
-server.listen(port, () => {
-    console.log('[✱] Démarrage du serveur sur le port', port);
+server.listen(port, host, () => {
+    const localAddresses = getLocalAddresses();
+    const addresses = localAddresses.length > 0 ? localAddresses : ['127.0.0.1'];
+    console.log('[✱] Démarrage du serveur sur', `${host}:${port}`);
+    console.log('[✱] Adresses locales disponibles :', addresses.map(addr => `http://${addr}:${port}`).join(', '));
 });
