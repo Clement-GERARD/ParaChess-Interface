@@ -15,6 +15,7 @@ import disconnect4Namespace from './namespaces/disconnect4.js';
 const app = express();
 const host = process.env.HOST || '0.0.0.0';
 const port = Number(process.env.PORT || 5000);
+const advertisedHost = process.env.ADVERTISED_HOST;
 
 app.set('trust proxy', true);
 
@@ -33,6 +34,11 @@ function getLocalAddresses() {
         .flat()
         .filter(details => details && details.family === 'IPv4' && !details.internal)
         .map(details => details.address);
+}
+
+function getAdvertisedUrl() {
+    const address = advertisedHost || getLocalAddresses()[0] || '127.0.0.1';
+    return `http://${address}:${port}`;
 }
 
 try {
@@ -102,8 +108,9 @@ server.on('error', error => {
 });
 
 server.listen(port, host, () => {
-    const localAddresses = getLocalAddresses();
-    const addresses = localAddresses.length > 0 ? localAddresses : ['127.0.0.1'];
     console.log('[✱] Démarrage du serveur sur', `${host}:${port}`);
-    console.log('[✱] Adresses locales disponibles :', addresses.map(addr => `http://${addr}:${port}`).join(', '));
+    console.log('[✱] URL réseau à utiliser :', getAdvertisedUrl());
+    if (!advertisedHost) {
+        console.log('[✱] Pour une URL Wi-Fi fiable, relancer avec ADVERTISED_HOST=<IPv4_DU_PC>.');
+    }
 });
