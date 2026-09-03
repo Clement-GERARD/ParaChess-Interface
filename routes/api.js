@@ -1,3 +1,7 @@
+/**
+ * Routes API de découverte, création et consultation des parties disponibles.
+ */
+
 import express, { Router } from "express"
 import path from 'path';
 import { parachessGames } from '../namespaces/parachess.js';

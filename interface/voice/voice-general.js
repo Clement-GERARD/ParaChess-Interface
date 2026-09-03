@@ -6,6 +6,7 @@
     const page = document.body.dataset.voicePage;
     const game = new URLSearchParams(location.search).get('g');
 
+    /** Calcule les destinations de navigation pour la page courante. @returns {object} Destinations ou null selon la page. */
     function dest() {
         return {
             credits: page === 'credits' ? null : '/credits',
@@ -20,11 +21,13 @@
         };
     }
 
+    /** Navigue vers une URL si elle est définie. @param {string|null} url Destination. @returns {void} Aucun retour. */
     function go(url) { if (url) window.open(url, '_self'); }
 
     /**
      * Activate / Desactivate facial recognition
      */
+    /** Active ou désactive le suivi facial. @param {boolean} active État demandé. @returns {void} Aucun retour. */
     function setFacialDetection(active) {
         if (active && typeof window.activateFacialDetection === 'function') {
             window.activateFacialDetection();
@@ -64,6 +67,7 @@
     /**
      * Activate / Desactivate microphone
      */
+    /** Bascule la capture du microphone. @returns {void} Aucun retour. */
     function toggleVocalMode() {
         const image = document.getElementById('toggle-vocal-button-image');
         const button = document.getElementById('toggle-vocal-button');
@@ -87,6 +91,7 @@
     }
     window.toggleVocalMode = window.toggleVocalMode || toggleVocalMode;
 
+    /** Démarre la capture micro et l'envoi audio au serveur. @returns {Promise<void>} Promesse d'initialisation. */
     async function startVoiceMenu() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });

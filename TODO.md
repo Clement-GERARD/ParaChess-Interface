@@ -35,6 +35,19 @@
 5. [ ] Finaliser la documentation utilisateur / développeur si besoin
 6. [ ] Faire une passe de polish responsive et ergonomie finale
 
+## 📱 Sous-projet mobile et qualité du code
+
+- [x] Préparer l'écoute réseau locale sur `0.0.0.0` et le port configurable
+- [x] Ajouter le test Docker local avec accès Wi-Fi et URL `ADVERTISED_HOST`
+- [x] Vérifier la connexion Socket.IO depuis le navigateur mobile
+- [ ] Mettre à jour et compléter la documentation du code et du README
+- [ ] Réduire les logs de debug verbeux tout en conservant les erreurs, permissions et démarrage
+- [ ] Vérifier séparément la verbosité des logs natifs générés par Vosk
+- [ ] Remplacer `ffi-napi` par une dépendance maintenue et compatible avec Node.js
+- [ ] Revalider le build et le démarrage Docker après remplacement de `ffi-napi`
+- [ ] Mettre en place HTTPS local pour tester micro et caméra
+- [ ] Valider le head tracking sur appareils mobiles réels
+
 ## ⚠️ Point de vigilance
 
 Les éléments restants ne sont plus des bugs critiques de logique ; ils relèvent surtout de la validation réelle, du comportement en environnement réel et de la finition produit.

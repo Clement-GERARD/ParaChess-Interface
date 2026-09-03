@@ -2,6 +2,7 @@
 /** Commandes vocales de la page "Jouer" de ParaChess **/
 /*******************************************************/
 
+/** Exécute une commande vocale dans la partie ParaChess. @param {string} command Commande applicative. @returns {void} Aucun retour. */
 function handleVoiceCommand(command) {
     switch (command) {
         case 'retour': window.history.back(); break;
@@ -48,6 +49,7 @@ function handleVoiceCommand(command) {
 /**
  * Show / Hide coordinates
  */
+/** Modifie l'affichage des coordonnées du plateau. @param {boolean} show État demandé. @returns {void} Aucun retour. */
 function setCoordinates(show) {
     const checkbox = document.getElementById('showCoordinates');
     if (!checkbox) return;
@@ -60,6 +62,7 @@ function setCoordinates(show) {
 let vocalMode = true;
 startRec();
 
+/** Bascule l'écoute vocale de la partie. @returns {void} Aucun retour. */
 function toggleVocalMode() {
     const image = document.getElementById('toggle-vocal-button-image');
     if (vocalMode) {
@@ -76,6 +79,7 @@ function toggleVocalMode() {
     }
 }
 
+/** Demande le microphone et transmet les échantillons audio. @returns {Promise<void>} Promesse d'initialisation. */
 async function startRec() {
     vocalMode = true;
     try {

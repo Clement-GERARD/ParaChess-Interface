@@ -29,6 +29,7 @@ app.use((req, res, next) => {
     next();
 });
 
+/** Récupère les adresses IPv4 non internes de la machine. @returns {string[]} Adresses candidates. */
 function getLocalAddresses() {
     return Object.values(os.networkInterfaces())
         .flat()
@@ -36,6 +37,7 @@ function getLocalAddresses() {
         .map(details => details.address);
 }
 
+/** Construit l'URL annoncée aux clients mobiles. @returns {string} URL HTTP accessible. */
 function getAdvertisedUrl() {
     const address = advertisedHost || getLocalAddresses()[0] || '127.0.0.1';
     return `http://${address}:${port}`;

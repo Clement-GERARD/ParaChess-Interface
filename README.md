@@ -1,5 +1,8 @@
 # ParaChess Interface
 
+> Application web Node.js de jeux accessibles, avec communication temps réel Socket.IO,
+> reconnaissance vocale Vosk et suivi facial côté navigateur.
+
 > Version personnelle du projet **ParaChess-Interface**, développée sur une branche indépendante du fork.
 >
 > Cette version a notamment pour objectif de permettre l'expérimentation, la modification de l'interface et, potentiellement, le déploiement d'une version statique via GitHub Pages.
@@ -24,6 +27,49 @@ Le dépôt contient à la fois :
 2. un **serveur Node.js** ;
 3. différentes routes permettant d'accéder aux jeux et fonctionnalités ;
 4. des fonctionnalités temps réel utilisant Socket.IO.
+
+## 📱 Préparation mobile et tablette
+
+Le projet conserve son frontend web et son backend Node.js. La cible mobile est une
+application hybride Capacitor publiée dans les stores, avec le backend hébergé séparément.
+La voix reste traitée par Vosk côté serveur et le suivi facial reste exécuté dans le navigateur
+ou le WebView, sous réserve des permissions et des capacités de l'appareil.
+
+### État actuel du test réseau local
+
+Le backend et le conteneur Docker ont été validés sur un réseau Wi-Fi privé :
+
+- l'image Docker se construit avec une base Debian et les dépendances natives de Vosk ;
+- le conteneur écoute sur `0.0.0.0:5000` ;
+- l'interface d'accueil est accessible depuis un téléphone avec l'IPv4 du PC ;
+- Socket.IO établit une connexion visible dans les logs du conteneur ;
+- caméra et microphone restent à tester en HTTPS, car une adresse IP locale en HTTP n'est pas
+     un contexte sécurisé pour `getUserMedia`.
+
+Le fichier `scripts/run-mobile-test.ps1` détecte l'IPv4 locale du PC et transmet
+`ADVERTISED_HOST` au conteneur :
+
+```powershell
+docker build -t parachess-mobile-test .
+powershell -ExecutionPolicy Bypass -File .\scripts\run-mobile-test.ps1
+```
+
+L'URL affichée par le serveur est celle à saisir sur le téléphone, par exemple
+`http://172.16.2.165:5000`. L'adresse `172.17.x.x` d'un conteneur Docker n'est pas une adresse
+à utiliser depuis le téléphone.
+
+### Docker et dépendances vocales
+
+Le `Dockerfile` utilise `node:20-bookworm-slim` et installe les outils de compilation nécessaires
+aux modules natifs. Le modèle `model-fr/` est requis au démarrage. Le contournement actuel
+`CXXFLAGS="-fpermissive"` permet le build de `ffi-napi`, mais reste temporaire : le remplacement
+de `ffi-napi` doit être traité séparément puis suivi d'une nouvelle validation Docker.
+
+### Logs
+
+Les logs de démarrage, d'erreur, de permission et de connexion Socket.IO restent actifs.
+Les traces de debug verbeuses sont commentées dans le code et peuvent être réactivées
+ponctuellement pour diagnostiquer un problème.
 
 ---
 

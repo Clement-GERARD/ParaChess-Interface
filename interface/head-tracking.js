@@ -1,5 +1,9 @@
 import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8";
 
+/**
+ * Détection faciale côté navigateur : caméra, position du regard et clignement.
+ */
+
 const video = document.getElementById("webcam");
 const gazeDot = document.getElementById("head-tracker");
 const predictionInterval = 33; // 33 fps

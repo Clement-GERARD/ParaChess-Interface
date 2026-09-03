@@ -1,3 +1,7 @@
+/**
+ * Routes HTTP servant les pages de ParaChess.
+ */
+
 import express, { Router } from "express"
 import path from 'path';
 

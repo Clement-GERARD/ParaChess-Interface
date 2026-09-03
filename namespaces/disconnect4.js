@@ -1,6 +1,11 @@
+/**
+ * Namespace Socket.IO de Puissance 4 : sessions, coups et diffusion d'état.
+ */
+
 import Connect4 from '../games/disconnect4/connect4.js';
 import { recPuissance4, processAudioBuffer, detectMenuCommand } from '../voice-recognition.js';
 
+/** Transforme une commande vocale en coup de Puissance 4. @param {object} nsp Namespace Socket.IO. @param {string} text Transcription normalisée. @param {string} address Adresse du joueur. @returns {void} Aucun retour. */
 function fromTextToMove(nsp, text, address) {
     const ip = extractIP(address);
     if (!lastDisconnect4UserGamesId[ip]) return;
@@ -107,7 +112,7 @@ export default function disconnect4Namespace(io) {
             if (!disconnect4Games[id].isPlayer(ip) || disconnect4Games[id].getPlayer(ip) !== '*')
                 return;
             disconnect4Games[id].undo();
-            console.log('[' + id + '] going back !');
+            // console.log('[' + id + '] going back !');
             disconnect4Games[id].displayBoard();
             nsp.to(roomIdentifier).emit('boardStates', disconnect4Games[id].getPositions());
             nsp.to(roomIdentifier).emit('legalColumns', disconnect4Games[id].getLegalColumns());

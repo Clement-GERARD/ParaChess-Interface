@@ -1,3 +1,7 @@
+/**
+ * Initialisation Vosk, normalisation des commandes et traitement des flux audio RTP.
+ */
+
 import dgram from 'dgram';
 import fs from 'fs';
 import path from 'path';
@@ -14,6 +18,7 @@ const HOST = '127.0.0.1';
 const MODEL_PATH = path.resolve(PROJECT_ROOT, 'model-fr');
 const SAMPLE_RATE = 16000;
 
+/** Vérifie le répertoire de lancement du serveur. @returns {boolean} Vrai si le projet est lancé depuis sa racine. */
 export function validateStartupCommand() {
     const currentDir = path.resolve(process.cwd());
     const isProjectRoot = currentDir === PROJECT_ROOT;
@@ -25,6 +30,7 @@ export function validateStartupCommand() {
     return isProjectRoot;
 }
 
+/** Vérifie les fichiers indispensables au modèle Vosk. @returns {object} Métadonnées du modèle. @throws {Error} Si le modèle est absent ou incomplet. */
 export function validateModelDirectory() {
     const requiredFiles = [
         'conf/model.conf',
@@ -54,6 +60,7 @@ export function validateModelDirectory() {
     };
 }
 
+/** Valide l'environnement vocal et journalise le modèle disponible. @returns {object} Métadonnées de validation. */
 export function validateVoiceEnvironment() {
     validateStartupCommand();
     const metadata = validateModelDirectory();
@@ -162,6 +169,7 @@ try {
     console.error(`[Voice] Impossible de démarrer la reconnaissance vocale : ${error.message}`);
 }
 
+/** Normalise une transcription et applique les alias vocaux. @param {string} text Texte reconnu. @returns {string} Texte normalisé. */
 export function normalizeSpeech(text) {
     if (typeof text !== 'string') return '';
     const normalized = text
@@ -180,6 +188,7 @@ export function normalizeSpeech(text) {
         .join(' ');
 }
 
+/** Transmet un buffer audio à Vosk. @param {object} recognizer Reconnaisseur Vosk. @param {ArrayBuffer|Uint8Array|Buffer} buffer Audio brut. @returns {string|null} Commande normalisée ou null. */
 export function processAudioBuffer(recognizer, buffer) {
     if (!recognizer || typeof recognizer.acceptWaveform !== 'function') {
         return null;
@@ -208,6 +217,7 @@ export function processAudioBuffer(recognizer, buffer) {
     return normalizeSpeech(result.text);
 }
 
+/** Démarre l'écoute RTP et transmet les transcriptions au callback. @param {Function} callback Fonction appelée avec texte et adresse. @param {object} recognizer Reconnaisseur Vosk. @returns {void} Aucun retour. */
 export function startListening(callback, recognizer = recChess) {
     server.on('error', err => {
         if (err && err.code === 'EADDRINUSE') {
@@ -237,10 +247,12 @@ export function startListening(callback, recognizer = recChess) {
     server.bind(PORT, HOST);
 };
 
+/** Compatibilité historique pour normaliser un texte. @param {string} text Texte à transformer. @returns {string} Texte normalisé. */
 export function transform(text) {
     return normalizeSpeech(text);
 }
 
+/** Détecte une commande de navigation dans une transcription. @param {string} text Texte vocal. @returns {string|null} Commande applicative ou null. */
 export function detectMenuCommand(text) {
     const words = normalizeSpeech(text).split(/\s+/).filter(Boolean);
 

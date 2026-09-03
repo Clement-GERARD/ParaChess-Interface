@@ -197,7 +197,7 @@ export class Chess {
             if (text.includes("bestmove")) {
                 this.eval = this.lastEval;
                 this.onEval(this.eval);
-                console.log('[Stockfish] Computation over');
+                // console.log('[Stockfish] Computation over');
             }
         });
         this.engine.stdin.write("uci\n");
@@ -724,7 +724,7 @@ export class Chess {
      * Displays the board in the console.
      */
     displayBoard() {
-        console.log(this.board.toString());
+        // console.log(this.board.toString());
     }
 
     /**

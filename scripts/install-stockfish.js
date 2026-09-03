@@ -1,3 +1,7 @@
+/**
+ * Téléchargement, installation et validation du binaire Stockfish local.
+ */
+
 import { createWriteStream } from 'fs';
 import { chmod, mkdir, readdir, rename, rm, stat, writeFile } from 'fs/promises';
 import os from 'os';
@@ -13,12 +17,14 @@ const binaryName = process.platform === 'win32' ? 'stockfish.exe' : 'stockfish';
 const binaryPath = path.join(installDirectory, binaryName);
 const releaseApiUrl = 'https://api.github.com/repos/official-stockfish/Stockfish/releases/latest';
 
+/** Détermine le motif de binaire adapté à la plateforme. @returns {RegExp} Motif de recherche. */
 function platformPattern() {
     if (process.platform === 'win32') return /windows.*(x86-64|x64).*avx2.*\.zip$/i;
     if (process.platform === 'darwin') return /macos.*(x86-64|arm64).*\.tar$/i;
     return /ubuntu.*x86-64.*avx2.*\.tar$/i;
 }
 
+/** Télécharge une archive vers un fichier local. @param {string} url URL distante. @param {string} destination Chemin local. @returns {Promise<void>} Promesse de fin d'écriture. */
 async function download(url, destination) {
     const response = await fetch(url, { headers: { 'User-Agent': 'ParaChess-install-stockfish' } });
     if (!response.ok || !response.body) {
@@ -27,6 +33,7 @@ async function download(url, destination) {
     await pipeline(response.body, createWriteStream(destination));
 }
 
+/** Recherche récursivement un binaire Stockfish. @param {string} directory Répertoire de départ. @returns {Promise<string|null>} Chemin trouvé ou null. */
 async function findBinary(directory) {
     const names = await readdir(directory, { withFileTypes: true });
     for (const entry of names) {
@@ -41,6 +48,7 @@ async function findBinary(directory) {
     return null;
 }
 
+/** Installe Stockfish si nécessaire. @returns {Promise<void>} Promesse de fin d'installation. @throws {Error} En cas d'échec de téléchargement ou d'installation. */
 async function install() {
     if (process.env.STOCKFISH === 'NO') {
         console.log('[Stockfish] Installation ignoree (STOCKFISH=NO)');

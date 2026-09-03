@@ -2,6 +2,7 @@ window.connection = connection;
 let socket = null;
 let legalMoves = [];
 
+/** Initialise la connexion Socket.IO du spectateur. @returns {void} Aucun retour. */
 function connection() {
     const search = new URLSearchParams(window.location.search);
     if(!search.has('g')) return;
@@ -22,16 +23,16 @@ function connection() {
         legalMoves = moves;
     });
 
-    socket?.on('eval', eval => {
-        if (!eval) return;
-        if (typeof eval?.white === "number" && typeof eval?.black === "number"
-            && typeof eval?.draw === "number" && typeof eval?.p === "number") {
+    socket?.on('eval', evaluation => {
+        if (!evaluation) return;
+        if (typeof evaluation?.white === "number" && typeof evaluation?.black === "number"
+            && typeof evaluation?.draw === "number" && typeof evaluation?.p === "number") {
             document.getElementById('stats-error').classList.add('hidden');
             document.getElementById('stats-list').classList.remove('hidden');
-            document.getElementById('white-stats').innerText = eval.white;
-            document.getElementById('black-stats').innerText = eval.black;
-            document.getElementById('draw-stats').innerText = eval.draw;
-            document.getElementById('score-p').innerText = (eval.p > 0 ? "+": "") + eval.p;
+            document.getElementById('white-stats').innerText = evaluation.white;
+            document.getElementById('black-stats').innerText = evaluation.black;
+            document.getElementById('draw-stats').innerText = evaluation.draw;
+            document.getElementById('score-p').innerText = (evaluation.p > 0 ? "+": "") + evaluation.p;
         } else {
             document.getElementById('stats-list').classList.add('hidden');
             document.getElementById('stats-error').classList.remove('hidden');
@@ -70,10 +71,12 @@ function connection() {
     });
 }
 
+/** Reçoit un mouvement diffusé et met à jour l'historique local. @param {string} from Case de départ. @param {string} to Case d'arrivée. @returns {void} Aucun retour. */
 function sendMove(from, to) {
     sendMove(from, to, null)
 }
 
+/** Met à jour l'historique local après un mouvement. @param {string} from Case de départ. @param {string} to Case d'arrivée. @param {string|null} piece Promotion éventuelle. @returns {void} Aucun retour. */
 function sendMove(from, to, piece) {
     positionsIndex += 1;
     if (positionsIndex < positions.length - 1) {
@@ -85,11 +88,13 @@ function sendMove(from, to, piece) {
     legalMoves = null;
 }
 
+/** Masque les fenêtres d'état et de promotion. @returns {void} Aucun retour. */
 function hideAll() {
     document.getElementById('promotion-popup').classList.remove('visible');
     document.getElementById('state-popup').classList.remove('visible');
 }
 
+/** Applique l'option d'affichage des coordonnées. @returns {void} Aucun retour. */
 function showCoordinates() {
     const checkbox = document.getElementById('showCoordinates');
     document.getElementById("chessboard").classList.toggle('show-coordinates', checkbox.checked);

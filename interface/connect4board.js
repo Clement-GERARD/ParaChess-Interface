@@ -1,3 +1,7 @@
+/**
+ * Contrôleur navigateur du plateau de Puissance 4 et de ses interactions.
+ */
+
 const dictCouleurs = { 'r': 'rouge', 'b': 'bleu' };
 const dictCouleursEmojis = { 'r': '🔴', 'b': '🔵' };
 

@@ -1,6 +1,11 @@
+/**
+ * Namespace Socket.IO de ParaChess : sessions, coups, voix et diffusion d'état.
+ */
+
 import { Chess, PROMOTIONS_PIECES_NAME } from '../games/parachess/chess.js';
 import { recChess, processAudioBuffer, startListening, detectMenuCommand } from '../voice-recognition.js';
 
+/** Diffuse une évaluation aux spectateurs d'une partie. @param {object} io Instance Socket.IO. @param {string} gameId Identifiant de partie. @returns {Function} Fonction de diffusion. */
 function createSendEval(io, gameId) {
     return function (payload) {
         const room = io.of('/parachess').adapter.rooms.get('game:' + gameId);
@@ -15,6 +20,7 @@ function createSendEval(io, gameId) {
     };
 }
 
+/** Transforme une commande vocale en action de partie. @param {object} nsp Namespace Socket.IO. @param {string} text Transcription normalisée. @param {string} address Adresse du joueur. @returns {void} Aucun retour. */
 function fromTextToMove(nsp, text, address) {
     const ip = extractIP(address);
 
@@ -71,7 +77,7 @@ function fromTextToMove(nsp, text, address) {
         else piece = "r";                                               // Rook
     }
 
-    console.log(lastParachessUserGamesId[ip] + " : " + squares[0] + "-" + squares[1] + " (" + piece + "): " + game.play(ip, squares[0], squares[1], piece));
+    // console.log(lastParachessUserGamesId[ip] + " : " + squares[0] + "-" + squares[1] + " (" + piece + "): " + game.play(ip, squares[0], squares[1], piece));
     game.displayBoard();
 
     nsp.to('game:' + id).emit('boardStates', game.getPositions());
@@ -147,7 +153,7 @@ export default function parachessNamespace(io) {
             if (!parachessGames[id].isPlayer(ip) || parachessGames[id].getPlayer(ip) !== '*')
                 return;
             parachessGames[id].undo(true, true);
-            console.log('[' + id + '] going back !');
+            // console.log('[' + id + '] going back !');
             parachessGames[id].displayBoard();
             nsp.to(roomIdentifier).emit('boardStates', parachessGames[id].getPositions());
             nsp.to(roomIdentifier).emit('legalMoves', parachessGames[id].getAllLegalMoves());
@@ -159,7 +165,7 @@ export default function parachessNamespace(io) {
                 return;
             parachessGames[id].clear();
             parachessGames[id] = new Chess(createSendEval(io, id), fen);
-            console.log('[!] Forcing \"' + id + "\" to position : \"" + fen + "\"");
+            // console.log('[!] Forcing \"' + id + "\" to position : \"" + fen + "\"");
             nsp.to(roomIdentifier).emit('boardStates', parachessGames[id].getPositions());
             nsp.to(roomIdentifier).emit('state', parachessGames[id].getState());
             const moves = parachessGames[id].getAllLegalMoves();

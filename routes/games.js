@@ -1,3 +1,7 @@
+/**
+ * Route HTTP de navigation vers la sélection des jeux.
+ */
+
 import { Router } from "express"
 import path from 'path';
 

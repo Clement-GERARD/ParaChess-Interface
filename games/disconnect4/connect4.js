@@ -86,7 +86,7 @@ export default class Connect4 {
      * Displays the board in the console.
      */
     displayBoard() {
-        console.log(this.board.toString());
+        // console.log(this.board.toString());
     }
 
     /**

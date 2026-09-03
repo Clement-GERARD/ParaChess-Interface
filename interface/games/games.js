@@ -1,3 +1,7 @@
+/**
+ * Contrôleur de la page de sélection et de création des parties.
+ */
+
 const gamesList = document.getElementById('game-list');
 let gameURLAddress = null;
 

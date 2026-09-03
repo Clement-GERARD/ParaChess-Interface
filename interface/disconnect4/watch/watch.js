@@ -1,3 +1,7 @@
+/**
+ * Contrôleur navigateur du mode spectateur de Puissance 4.
+ */
+
 window.connection = connection;
 let socket = null;
 
@@ -38,7 +42,7 @@ function connection() {
             }
         }
         if (announcement.length > 0) {
-            console.log(announcement.join(" ")); // ! TEMP
+            // console.log(announcement.join(" ")); // ! TEMP
             // TODO : announce(announcement.join(" "));
         }
     });

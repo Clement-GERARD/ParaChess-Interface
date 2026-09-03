@@ -1,3 +1,7 @@
+/**
+ * Route de repli servant l'accueil et les ressources de l'interface web.
+ */
+
 import { Router } from "express"
 import path from 'path';
 

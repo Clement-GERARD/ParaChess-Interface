@@ -1,4 +1,8 @@
 /**
+ * Actions et transformations utilisées par le moteur ParaChess.
+ */
+
+/**
 * Available move action flags.
 */
 const Actions = {

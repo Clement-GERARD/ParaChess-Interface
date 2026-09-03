@@ -1,3 +1,7 @@
+/**
+ * Contrôleur navigateur du plateau ParaChess et de ses interactions clavier/souris.
+ */
+
 const chessboard = document.getElementById("chessboard");
 const promotions = document.getElementsByClassName("promotion");
 const blank = document.querySelector(".blank");
@@ -133,8 +137,8 @@ document.addEventListener("mouseup", e => {
     const square = e.target.closest(".square");
     if (square) {
         drop(square.dataset.pos);
-        if ((select.legal !== [] && select.legal.includes(square.dataset.pos)) ||
-            (legalMoves?.filter(move => move.from === drag.from).map(move => move.to) ?? []).includes(square.dataset.pos))
+        if (select.legal.includes(square.dataset.pos) ||
+            (legalMoves?.filter(move => move.from === drag.position).map(move => move.to) ?? []).includes(square.dataset.pos))
             updateSide();
     }
     blank.style.display = "none";

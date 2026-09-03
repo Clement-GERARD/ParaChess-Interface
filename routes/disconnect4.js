@@ -1,3 +1,7 @@
+/**
+ * Routes HTTP servant les pages de Puissance 4.
+ */
+
 import express, { Router } from "express"
 import path from 'path';
 

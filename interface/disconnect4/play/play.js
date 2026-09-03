@@ -1,3 +1,7 @@
+/**
+ * Contrôleur navigateur de la partie Puissance 4 côté joueur.
+ */
+
 window.connection = connection;
 let socket = null;
 
@@ -41,7 +45,7 @@ function connection() {
             }
         }
         if (announcement.length > 0) {
-            console.log(announcement.join(" ")); // ! TEMP
+            // console.log(announcement.join(" ")); // ! TEMP
             // TODO : announce(announcement.join(" "));
         }
     });
