@@ -26,27 +26,44 @@
 3. Dépendances externes non validées (Vosk + Stockfish)
 4. Démarrage fragile en présence de ports occupés ou de fichiers manquants
 
-## 📌 Ordre de priorité pour la suite
-
-1. [ ] Valider le lancement réel en navigateur sur le menu et les deux jeux
-2. [ ] Tester le micro en conditions réelles sur PC / téléphone / tablette
-3. [ ] Vérifier le flux complet voix → interprétation → action dans le jeu
-4. [ ] Contrôler le comportement en cas de modèle Vosk ou Stockfish indisponible
-5. [ ] Finaliser la documentation utilisateur / développeur si besoin
-6. [ ] Faire une passe de polish responsive et ergonomie finale
-
 ## 📱 Sous-projet mobile et qualité du code
 
 - [x] Préparer l'écoute réseau locale sur `0.0.0.0` et le port configurable
 - [x] Ajouter le test Docker local avec accès Wi-Fi et URL `ADVERTISED_HOST`
 - [x] Vérifier la connexion Socket.IO depuis le navigateur mobile
-- [ ] Mettre à jour et compléter la documentation du code et du README
-- [ ] Réduire les logs de debug verbeux tout en conservant les erreurs, permissions et démarrage
+- [x] Mettre à jour le README avec l'architecture et les procédures Node/Docker/mobile
+- [x] Ajouter les descriptions de rôle aux principaux fichiers backend, jeu et interface
+- [x] Documenter les fonctions backend et les fonctions vocales principales avec entrées/sorties
+- [x] Réduire plusieurs logs de debug verbeux sans supprimer leur code
+- [ ] Compléter la documentation des fonctions restantes de l'interface
+- [ ] Réduire les derniers logs de debug identifiés après vérification fonctionnelle
 - [ ] Vérifier séparément la verbosité des logs natifs générés par Vosk
 - [ ] Remplacer `ffi-napi` par une dépendance maintenue et compatible avec Node.js
 - [ ] Revalider le build et le démarrage Docker après remplacement de `ffi-napi`
 - [ ] Mettre en place HTTPS local pour tester micro et caméra
 - [ ] Valider le head tracking sur appareils mobiles réels
+
+## 📌 Priorités actuelles
+
+1. [ ] Tester le parcours complet du menu et des deux jeux après les corrections de documentation
+2. [ ] Remplacer `ffi-napi` par une solution maintenue et compatible avec Node.js
+3. [ ] Revalider le build, le démarrage et le fonctionnement Docker après ce remplacement
+4. [ ] Mettre en place HTTPS local pour le microphone et la caméra
+5. [ ] Tester le flux voix → interprétation → action sur téléphone et tablette
+6. [ ] Adapter et valider le head tracking sur appareils mobiles réels
+7. [ ] Finaliser le responsive et les interactions tactiles
+8. [ ] Préparer Capacitor, puis les builds Android/iOS et les tests internes des stores
+
+## ✅ Validations déjà réalisées
+
+- [x] Syntaxe validée pour le backend, les routes, les namespaces, les jeux et les scripts
+- [x] Tests de régression vocale : 4 tests réussis
+- [x] Image Docker reconstruite avec Vosk et `ffi-napi`
+- [x] Conteneur démarré sans crash après chargement du modèle Vosk
+- [x] Interface servie par le conteneur avec réponse HTTP 200
+- [x] Connexion Socket.IO observée dans les logs lors des tests précédents
+- [ ] Accès caméra/micro en HTTPS
+- [ ] Test complet depuis un appareil mobile réel dans le conteneur après les derniers changements
 
 ## ⚠️ Point de vigilance
 

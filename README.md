@@ -5,7 +5,7 @@
 
 > Version personnelle du projet **ParaChess-Interface**, développée sur une branche indépendante du fork.
 >
-> Cette version a notamment pour objectif de permettre l'expérimentation, la modification de l'interface et, potentiellement, le déploiement d'une version statique via GitHub Pages.
+> Cette version a notamment pour objectif de permettre l'expérimentation et la modification de l'interface.
 
 ---
 
@@ -31,7 +31,8 @@ Le dépôt contient à la fois :
 ## 📱 Préparation mobile et tablette
 
 Le projet conserve son frontend web et son backend Node.js. La cible mobile est une
-application hybride Capacitor publiée dans les stores, avec le backend hébergé séparément.
+application hybride Capacitor, destinée à être publiée dans les stores, avec le backend
+hébergé séparément. Cette application mobile n'est pas encore générée ni publiée.
 La voix reste traitée par Vosk côté serveur et le suivi facial reste exécuté dans le navigateur
 ou le WebView, sous réserve des permissions et des capacités de l'appareil.
 
@@ -104,6 +105,12 @@ ParaChess-Interface/
 │
 ├── routes/                 # Routes Express
 │
+├── scripts/                # Scripts d'installation et de test
+│   ├── install-stockfish.js
+│   └── run-mobile-test.ps1
+│
+├── Dockerfile              # Image Docker du backend
+├── .dockerignore           # Fichiers exclus du contexte Docker
 ├── index.js                # Point d'entrée du serveur Node.js
 ├── voice-recognition.js    # Reconnaissance vocale
 │
@@ -119,8 +126,9 @@ ParaChess-Interface/
 
 Avant de lancer le projet, il est nécessaire d'avoir installé :
 
-* Node.js
+* Node.js 20 ou version compatible
 * npm
+* Docker Desktop avec moteur WSL 2, uniquement pour les tests Docker
 
 Vous pouvez vérifier leur installation avec :
 
@@ -174,7 +182,7 @@ Le projet utilise notamment :
 
 ---
 
-# ▶️ Lancer le projet avec le serveur Node.js
+# ▶️ Lancer le projet avec Node.js
 
 La version complète du projet nécessite le serveur Node.js.
 
@@ -193,7 +201,7 @@ Le serveur utilise par défaut le port :
 Vous devriez voir dans le terminal un message similaire à :
 
 ```text
-[✱] Démarrage du serveur sur le port 5000
+[✱] Démarrage du serveur sur 0.0.0.0:5000
 ```
 
 Vous pouvez ensuite ouvrir dans votre navigateur :
@@ -293,15 +301,69 @@ Il gère également une connexion Socket.IO utilisée pour certaines fonctionnal
 
 ---
 
-# ❓ Puis-je lancer le projet sans serveur ?
+# 🐳 Lancer le projet avec Docker
 
-## Oui, mais avec des limitations importantes.
+Depuis la racine du projet, dans le terminal intégré de VS Code ou PowerShell :
 
-Il faut distinguer deux cas.
+```powershell
+docker build -t parachess-mobile-test .
+```
+
+Le `Dockerfile` utilise une image Debian et installe les outils nécessaires aux dépendances
+nat​​ives de Vosk et de `ffi-napi`. Le modèle `model-fr/` est inclus dans l'image. Le flag
+`CXXFLAGS="-fpermissive"` est un contournement temporaire du build de `ffi-napi` ; son
+remplacement est prévu dans le TODO.
+
+Pour lancer un test local accessible depuis un téléphone sur le même Wi-Fi :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run-mobile-test.ps1
+```
+
+Le script détecte l'IPv4 du PC, transmet `ADVERTISED_HOST` au conteneur et affiche l'URL à
+ouvrir sur le téléphone. Le serveur écoute sur `0.0.0.0:5000`, mais l'IP interne Docker
+`172.17.x.x` ne doit pas être utilisée par le téléphone.
+
+Pour arrêter le conteneur, utiliser `Ctrl+C` dans le terminal qui l'exécute.
+
+## Limitations du test HTTP local
+
+La page et Socket.IO fonctionnent sur le réseau local. En revanche, les navigateurs mobiles
+peuvent refuser caméra et microphone sur une URL HTTP utilisant une adresse IP. Il faudra
+mettre en place HTTPS local avant de tester `getUserMedia`, le microphone et le head tracking.
+
+Les logs `LOG (VoskAPI:...)` sont produits par la bibliothèque native Vosk et ne sont pas des
+`console.log` du projet. Leur verbosité doit être étudiée séparément.
+
+### Vérifications utiles
+
+Depuis la racine du projet :
+
+```powershell
+node --check .\index.js
+node --test .\voice-recognition.test.js
+docker build -t parachess-mobile-test .
+```
+
+Pour vérifier le conteneur en cours d'exécution :
+
+```powershell
+docker ps
+docker logs -f parachess-mobile-test
+```
+
+Une connexion mobile doit produire un log `[Socket] Nouvelle connexion`. L'adresse affichée
+par `socket.handshake.address` peut rester une adresse Docker (`172.17.x.x`) lorsque Docker
+Desktop effectue une translation réseau ; elle ne doit pas être interprétée comme l'adresse
+réelle du téléphone.
 
 ---
 
-# 1️⃣ Version complète — avec serveur
+# ❓ Lancer l'interface sans le serveur
+
+## Oui, avec des limitations importantes.
+
+# Version complète — avec serveur
 
 Architecture :
 
@@ -331,35 +393,6 @@ http://localhost:5000
 ```
 
 C'est la manière recommandée pour tester le projet original.
-
----
-
-# 2️⃣ Version statique — sans serveur
-
-Il est également possible d'utiliser uniquement les fichiers présents dans :
-
-```text
-interface/
-```
-
-Dans ce cas, vous pouvez ouvrir directement :
-
-```text
-interface/index.html
-```
-
-ou utiliser une extension comme **Live Server** dans Visual Studio Code.
-
-Cependant, certaines fonctionnalités peuvent ne pas fonctionner.
-
-Notamment :
-
-* les routes Express ;
-* les API ;
-* Socket.IO ;
-* certaines fonctionnalités multijoueur ou temps réel ;
-* la reconnaissance vocale côté serveur ;
-* toute fonctionnalité nécessitant Node.js.
 
 ---
 
@@ -395,112 +428,9 @@ Cette méthode est utile pour :
 * modifier certaines fonctionnalités JavaScript côté navigateur ;
 * tester rapidement les changements visuels.
 
-Elle ne remplace toutefois pas le serveur Node.js.
-
----
-
-# ☁️ GitHub Pages
-
-## Important
-
-GitHub Pages ne peut héberger que des fichiers statiques.
-
-Il peut servir :
-
-* HTML ;
-* CSS ;
-* JavaScript exécuté dans le navigateur ;
-* images ;
-* fichiers statiques.
-
-GitHub Pages ne peut pas exécuter :
-
-* Node.js ;
-* Express ;
-* Socket.IO côté serveur ;
-* Vosk côté serveur ;
-* les routes présentes dans `index.js`.
-
----
-
-## Architecture GitHub Pages
-
-Si le contenu du dossier :
-
-```text
-interface/
-```
-
-est déployé comme racine GitHub Pages :
-
-```text
-interface/index.html
-```
-
-devient :
-
-```text
-https://VOTRE-UTILISATEUR.github.io/ParaChess-Interface/
-```
-
-Par exemple :
-
-```text
-interface/
-├── index.html
-├── portal.css
-├── assets/
-├── games/
-├── parachess/
-└── help/
-```
-
-est publié comme :
-
-```text
-https://VOTRE-UTILISATEUR.github.io/ParaChess-Interface/
-│
-├── index.html
-├── portal.css
-├── assets/
-├── games/
-├── parachess/
-└── help/
-```
-
----
-
-# ⚠️ Différence entre chemins locaux et GitHub Pages
-
-Le projet original utilise le serveur Express pour servir l'interface via :
-
-```text
-/public/
-```
-
-Par exemple, un fichier peut être référencé ainsi :
-
-```html
-<link rel="stylesheet" href="/public/portal.css">
-```
-
-Cela fonctionne lorsque le serveur Express est actif.
-
-Pour une version GitHub Pages, ces chemins devront probablement être adaptés.
-
-Par exemple :
-
-```html
-<link rel="stylesheet" href="./portal.css">
-```
-
-Ou, selon l'emplacement du fichier :
-
-```html
-<link rel="stylesheet" href="../portal.css">
-```
-
-Les chemins devront être vérifiés individuellement afin de garantir que l'interface fonctionne correctement sur GitHub Pages.
+Cette méthode est utile pour vérifier rapidement certains changements HTML/CSS, mais elle ne
+remplace pas le serveur Node.js : les routes, les jeux, Socket.IO et Vosk ne fonctionneront pas
+comme dans l'application complète.
 
 ---
 
@@ -580,7 +510,7 @@ git commit -m "Description des modifications"
 Exemple :
 
 ```bash
-git commit -m "Adaptation de l'interface pour GitHub Pages"
+git commit -m "Documentation et préparation mobile"
 ```
 
 ---
@@ -686,24 +616,6 @@ http://localhost:5000
 
 ---
 
-## GitHub Pages fonctionne mais certaines fonctionnalités sont cassées
-
-C'est attendu si ces fonctionnalités nécessitent :
-
-* Express ;
-* Socket.IO côté serveur ;
-* Vosk ;
-* des API ;
-* des routes Node.js.
-
-Dans ce cas, il faut soit :
-
-1. adapter la fonctionnalité pour fonctionner entièrement côté navigateur ;
-2. héberger un backend séparément ;
-3. conserver le serveur Node.js pour la version complète.
-
----
-
 # 📌 Résumé rapide
 
 ### Développer l'interface uniquement
@@ -729,18 +641,6 @@ Puis :
 http://localhost:5000
 ```
 
-### Déployer une version statique
-
-```text
-interface/
-↓
-GitHub Actions
-↓
-GitHub Pages
-```
-
-⚠️ Les fonctionnalités nécessitant le backend Node.js devront être adaptées ou désactivées.
-
 ---
 
 # Projet original
@@ -750,8 +650,5 @@ Le projet d'origine est disponible ici :
 [ParaChess-Interface — dépôt original](https://github.com/Parachess/ParaChess-Interface?utm_source=chatgpt.com)
 
 Cette version constitue un fork destiné à des expérimentations et développements indépendants.
-:::
-
-**Point important pour la suite :** avant de transformer tout le projet pour GitHub Pages, je te conseille de commencer par lancer `node ./index.js` localement et vérifier ce qui fonctionne réellement. Ensuite, on pourra identifier précisément **quelles fonctionnalités dépendent du serveur et lesquelles peuvent fonctionner entièrement sur GitHub Pages**.
 
 
