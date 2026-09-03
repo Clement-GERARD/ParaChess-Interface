@@ -2,7 +2,7 @@ import dgram from 'dgram';
 import fs from 'fs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const vosk = require('vosk');
+const vosk = require('@echogarden/vosk');
 
 const server = dgram.createSocket('udp4');
 

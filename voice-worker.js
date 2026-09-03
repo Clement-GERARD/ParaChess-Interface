@@ -1,7 +1,7 @@
 import { parentPort } from 'worker_threads';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const vosk = require('vosk');
+const vosk = require('@echogarden/vosk');
 
 const MODEL_PATH = 'model-fr';
 const SAMPLE_RATE = 16000;

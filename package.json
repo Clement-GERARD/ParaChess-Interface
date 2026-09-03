@@ -5,10 +5,10 @@
   "main": "server.js",
   "scripts": {},
   "dependencies": {
+    "@echogarden/vosk": "^0.3.39-patched.1",
     "express": "^5.2.1",
+    "nodemon": "^3.1.14",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3",
-    "vosk": "^0.3.39"
-  },
-  "devDependencies": {}
+    "socket.io-client": "^4.8.3"
+  }
 }
