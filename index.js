@@ -64,13 +64,16 @@ app.use((req, res, next) => {
     next();
 });
 
+
+const voicePool = new VoicePool(); // demarre le(s) worker(s) au lancement du serveur
+ 
 io.on('connection', socket => {
     console.log(`[Socket] Nouvelle connexion: ${socket.id} | IP: ${socket.handshake.address}`);
 
     socket.on('alive', status => {
         socket.emit('alive_conn', 1)
     });
-
+ 
     socket.on('audio', buffer => {
         const cleaned = processAudioBuffer(recChess, buffer);
         if (!cleaned) {

@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const vosk = require('vosk');
+const vosk = require('@echogarden/vosk');
 
 const server = dgram.createSocket('udp4');
 
@@ -279,7 +279,3 @@ export function detectMenuCommand(text) {
 
     return null;
 }
-
-// startListening((text, address) => {
-//     console.log(`[🎯 Résultat final] : "${text}" (depuis ${address})`);
-// });
